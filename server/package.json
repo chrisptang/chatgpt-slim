@@ -1,0 +1,25 @@
+{
+    "name": "chatgpt-server",
+    "version": "1.0.0",
+    "author": "derrick.tang",
+    "private": true,
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.17.2",
+        "finale-rest": "^1.1.1",
+        "node-fetch": "^3.1.0",
+        "openai": "^3.2.1",
+        "node-postgres": "^0.6.2",
+        "pg": "^8.7.1",
+        "pg-hstore": "^2.3.4",
+        "sequelize": "6.12.5",
+        "stringy": "0.1.0",
+        "axios-proxy-fix": "^0.16.3",
+        "https-proxy-agent": "^5.0.1"
+    },
+    "engines": {
+        "node": ">= 4.0.0",
+        "npm": ">= 3.0.0"
+    },
+    "type": "module"
+}
