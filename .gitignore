@@ -31,3 +31,4 @@ server/node_modules
 pg-data/
 package-lock.json
 server/package-lock.json
+.env

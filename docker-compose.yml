@@ -1,6 +1,17 @@
 version: '2'
 
 services:
+  chat-server:
+    container_name: chat-server
+    image: chrisptang/chatgpt-slim:0.0.1
+    ports:
+      - 9000:8081
+    environment:
+      - OPENAI_API_KEY=$OPENAI_API_KEY
+      - HTTP_PROXY=$HTTP_PROXY
+    depends_on:
+      - db-postgres
+
   db-postgres:
     container_name: db-postgres
     image: postgres:10
