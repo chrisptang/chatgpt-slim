@@ -22,11 +22,10 @@ export default {
     },
     async created() {
         this.refresh();
-        // this.listCountrys();
     },
     methods: {
         async refresh() {
-
+            this.listChats();
         },
         async completeChat() {
             this.loading = true;
@@ -37,7 +36,14 @@ export default {
         },
         async listChats() {
             this.loading = true;
-            this.chats = await api.listChats();
+            let chatRecords = await api.listChats();
+            if (chatRecords && chatRecords.length > 0) {
+                this.chats = chatRecords.map(record => {
+                    let chat = JSON.parse(record.response);
+                    chat.propmt = record.propmt;
+                    return chat
+                });
+            }
             this.loading = false;
         },
     },
