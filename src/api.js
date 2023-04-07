@@ -13,16 +13,18 @@ export default {
             url: resource,
             data
         }).then(req => {
-            return req.data
+            return req.data;
+        }).catch(err => {
+            console.error(err);
         })
     },
-    listChats() {
+    listChats(chat_count = 10) {
         return this.execute('get', `/chats`)
     },
     listChat(id) {
         return this.execute('get', `/chats/${id}`)
     },
-    newChat(propmt) {
-        return this.execute('post', '/newChat', { propmt: propmt });
+    newChat(propmt, refer_previous = false) {
+        return this.execute('post', '/newChat', { propmt: propmt, refer_previous: refer_previous });
     }
 }

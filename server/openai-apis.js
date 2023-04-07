@@ -3,7 +3,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import finale from 'finale-rest';
 import fetch from 'node-fetch';
-import { Sequelize, Op } from 'sequelize';
+import { Sequelize, Op, json } from 'sequelize';
 import { createServer } from 'http';
 import { Configuration, OpenAIApi } from "openai";
 import HttpsProxyAgent from "https-proxy-agent";
@@ -27,7 +27,7 @@ async function make_openai_request(path, data) {
     const postJson = { headers }
     if (process.env.HTTP_PROXY) {
         postJson.agent = new HttpsProxyAgent(process.env.HTTP_PROXY);
-        console.log("using proxy:", postJson);
+        console.log("using proxy:", postJson.agent);
     }
     let url = `https://api.openai.com/v1/${path}`
     console.log("making request to:", url)
@@ -85,6 +85,22 @@ finale.initialize({
     sequelize: database
 })
 
+async function getLatestChatRecords(max_previous = 5) {
+    if (max_previous <= 0) {
+        return [];
+    }
+    try {
+        const latestRecords = await Chats.findAll({
+            order: [['create_time', 'DESC']],
+            limit: max_previous
+        });
+        return latestRecords;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
 // Create the dynamic REST resource for our Post model
 let chatResources = finale.resource({
     model: Chats,
@@ -98,9 +114,23 @@ function randomSeqId() {
 app.post('/api/newChat', async (req, res) => {
     let model = req.body.model || "gpt-3.5-turbo-0301";
     let propmt = req.body.propmt;
+    let refer_previous = req.body.refer_previous || false;
+    let max_previous = req.body.max_previous || 5;
+    if (!propmt || propmt.length <= 5) {
+        console.warn("invalid propmt:", propmt);
+        res.status = 400;
+        res.write("invalid propmt:" + propmt);
+        res.end();
+        return;
+    }
+
     let data = {
         model: model,
         messages: [{ role: "user", content: propmt }]
+    }
+    if (refer_previous) {
+        await appendPreviousChat(data, max_previous);
+        console.log("added previous chats:", data);
     }
     console.log("starting chat with:", data);
     const completion = await make_openai_request("chat/completions", data);
@@ -123,14 +153,29 @@ app.post('/api/newChat', async (req, res) => {
     res.json(completion)
 });
 
+async function appendPreviousChat(data, max_previous = 5) {
+    let records = await getLatestChatRecords(max_previous);
+    console.log("refering records:", records);
+    if (records && records.length > 0) {
+        // message format:
+        // let data = {
+        //     model: model,
+        //     messages: [{ role: "user", content: propmt }]
+        // }
+        records.forEach(chat => {
+            data.messages = data.messages.concat(JSON.parse(chat.response).choices[0].message);
+            data.messages = data.messages.concat({ role: "user", content: chat.propmt });
+            return 0;
+        });
+        data.messages = data.messages.reverse();
+        console.log("data.messages:", data.messages, "\nrecords:", records);
+    }
+}
+
 app.get('/api/chat-list', async (req, res) => {
-    let date_list = await Chats.findAll({
-        attributes: [
-            [Sequelize.fn('DISTINCT', Sequelize.col('create_time')), 'create_time'],
-        ]
-    })
-    res.write(JSON.stringify(date_list));
-    res.end();
+    let size = req.query.size || 10;
+    let records = await getLatestChatRecords(size);
+    res.json(records);
 });
 
 const port = parseInt(process.env.PORT || "8081")
