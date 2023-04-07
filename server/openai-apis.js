@@ -1,11 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import finale from 'finale-rest';
 import fetch from 'node-fetch';
 import { Sequelize, Op, json } from 'sequelize';
 import { createServer } from 'http';
-import { Configuration, OpenAIApi } from "openai";
 import HttpsProxyAgent from "https-proxy-agent";
 
 let app = express();
@@ -31,23 +29,23 @@ async function make_openai_request(path, data) {
     }
     let url = `https://api.openai.com/v1/${path}`
     console.log("making request to:", url)
-    if (!data) {
-        //GET
-        let resposne = await fetch(url, postJson)
-        return await resposne.json();
-    } else {
+    if (data) {
         //POST as json
         postJson.method = "POST";
         postJson.body = JSON.stringify(data);
         let resposne = await fetch(url, postJson);
         return await resposne.json();
     }
+    let resposne = await fetch(url, postJson);
+    if (resposne.status != 200) {
+        console.error("error code:", resposne.status, await resposne.text());
+        return {};
+    }
+    return await resposne.json();
 }
 
 let test = await make_openai_request("models")
 console.log("test openai:", test);
-
-const openai = new OpenAIApi(configuration);
 
 const static_path = process.env.SERVER_STATIC_PATH || '../dist';
 app.use(express.static(static_path))
@@ -79,19 +77,13 @@ let Chats = database.define('chat_records', {
     }]
 });
 
-// Initialize finale
-finale.initialize({
-    app: app,
-    sequelize: database
-})
-
-async function getLatestChatRecords(max_previous = 5) {
+async function getLatestChatRecords(max_previous = 5, order = "DESC") {
     if (max_previous <= 0) {
         return [];
     }
     try {
         const latestRecords = await Chats.findAll({
-            order: [['create_time', 'DESC']],
+            order: [['create_time', order]],
             limit: max_previous
         });
         return latestRecords;
@@ -100,12 +92,6 @@ async function getLatestChatRecords(max_previous = 5) {
         return null;
     }
 }
-
-// Create the dynamic REST resource for our Post model
-let chatResources = finale.resource({
-    model: Chats,
-    endpoints: ['/api/chats', '/api/chats/:id']
-})
 
 function randomSeqId() {
     return parseInt(new Date().getTime() + "" + Math.floor(Math.random() * 999 + 1000));
@@ -172,10 +158,19 @@ async function appendPreviousChat(data, max_previous = 5) {
     }
 }
 
-app.get('/api/chat-list', async (req, res) => {
+app.get('/api/chats', async (req, res) => {
     let size = req.query.size || 10;
     let records = await getLatestChatRecords(size);
+    if (records && records.length > 1) {
+        records = records.reverse();
+    }
     res.json(records);
+});
+
+app.get('/api/chats/:id', async (req, res) => {
+    let id = req.params.id
+    let recod = await Chats.findOne({ where: { id: id } })
+    res.json(recod);
 });
 
 const port = parseInt(process.env.PORT || "8081")

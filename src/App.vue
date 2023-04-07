@@ -1,5 +1,4 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
 import ChatList from './components/ChatList.vue'
 </script>
 

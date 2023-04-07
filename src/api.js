@@ -18,8 +18,8 @@ export default {
             console.error(err);
         })
     },
-    listChats(chat_count = 10) {
-        return this.execute('get', `/chats`)
+    listChats(chat_count = 5) {
+        return this.execute('get', `/chats?size=${chat_count}`)
     },
     listChat(id) {
         return this.execute('get', `/chats/${id}`)
