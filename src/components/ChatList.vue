@@ -142,7 +142,6 @@ p.chat-propmt {
     padding: 10px;
     width: 100%;
     max-width: 100vw;
-    /* min-width: 100vw; */
     max-height: 300px;
     min-height: 50px;
 }
