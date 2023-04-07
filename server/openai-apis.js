@@ -13,10 +13,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 console.log("about to start new chatgpt server with key:", (process.env.OPENAI_API_KEY || "0000000000").substring(0, 10));
 
-const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY
-});
-
 async function make_openai_request(path, data) {
     const headers = {
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,

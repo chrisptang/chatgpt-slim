@@ -1,5 +1,6 @@
 <script>
 import api from "@/api";
+import { useRoute } from "vue-router";
 export default {
     name: "ChatList",
     data() {
@@ -43,11 +44,12 @@ export default {
             let newChat = await api.newChat(prompt, this.refer_previous);
             this.chats = this.chats.concat(newChat);
             this.loading = false;
-            this.prompt;
+            this.prompt = "";
         },
         async listChats() {
             this.loading = true;
-            let chatRecords = await api.listChats(this.chat_count);
+            let counts = useRoute().query.count || this.chat_count || 10;
+            let chatRecords = await api.listChats(counts);
             if (chatRecords && chatRecords.length > 0) {
                 this.chats = chatRecords.map(record => {
                     let chat = JSON.parse(record.response);
@@ -69,8 +71,7 @@ export default {
         <ul class="chat-list-ul">
             <li v-for="chat in chats" :key="chat.prompt" class="single-chat">
                 <p class="chat-propmt">{{ chat.propmt }}</p>
-                <p class="chat-response">
-                    {{ chat.choices[0].message.content }}
+                <p class="chat-response" v-html="window.markdownit().render(chat.choices[0].message.content)">
                 </p>
             </li>
         </ul>
@@ -120,16 +121,17 @@ h3 {
 }
 
 .single-chat p {
-    padding: 5px;
+    padding: 5px 10px;
 }
 
 p.chat-response {
-    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 p.chat-propmt {
     white-space: pre-wrap;
     background-color: hsla(200, 100%, 90%, 1);
+    box-shadow: hsla(200, 100%, 90%, 1) 0 5px 5px;
     margin-bottom: 10px;
 }
 
@@ -173,6 +175,19 @@ p.chat-propmt {
     .greetings h1,
     .greetings h3 {
         text-align: left;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .chat-list-ul li.single-chat {
+        color: #e0e0e0;
+        background: #444;
+    }
+
+    p.chat-propmt {
+        background-color: #222;
+        box-shadow: #111 0 5px 5px;
+        color: #fff;
     }
 }
 </style>
