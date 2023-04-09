@@ -7,6 +7,8 @@ export default {
         return {
             msg: "Chat with GPT-3.5",
             warn_msg: "",
+            counting_num: 1,
+            counting_timeout: null,
             refer_previous: false,
             chats: [{
                 propmt: "you can type any text to start chat with ChatGPT-3.5",
@@ -31,6 +33,14 @@ export default {
         async refresh() {
             this.listChats();
         },
+        async startCounting() {
+            this.counting_timeout = setInterval(function () { this.counting_num++; }.bind(this), 1000);
+        },
+        async endCounting() {
+            if (this.counting_timeout > 0) {
+                window.clearInterval(this.counting_timeout);
+            }
+        },
         async completeChat() {
             this.loading = true;
             this.warn_msg = "";
@@ -41,15 +51,19 @@ export default {
                 this.prompt = "";
                 return;
             }
+            this.startCounting();
             let newChat = await api.newChat(prompt, this.refer_previous);
             this.chats = this.chats.concat(newChat);
             this.loading = false;
             this.prompt = "";
+            this.endCounting();
         },
         async listChats() {
             this.loading = true;
             let counts = useRoute().query.count || this.chat_count || 10;
+            this.startCounting();
             let chatRecords = await api.listChats(counts);
+            this.endCounting();
             if (chatRecords && chatRecords.length > 0) {
                 this.chats = chatRecords.map(record => {
                     let chat = JSON.parse(record.response);
@@ -87,7 +101,8 @@ export default {
                 Refer previous chats</label>
         </p>
         <p style="min-height: 30px;">
-            <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response...
+            <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
+                `...${this.counting_num}s` }}
             </span>
             <span style="color: red;" :class="{ hide: !warn_msg || warn_msg.length <= 0 }">{{ warn_msg }}
             </span>
@@ -112,27 +127,37 @@ h1 {
 }
 
 .chat-list-ul li.single-chat {
-    background-color: ghostwhite;
     margin-bottom: 20px;
+}
+
+.chat-list-ul li.single-chat .chat-response {
+    background-color: ghostwhite;
 }
 
 h3 {
     font-size: 1.2rem;
 }
 
-.single-chat p {
-    padding: 5px 10px;
-}
-
 p.chat-response {
     overflow-wrap: anywhere;
+    padding: 5px 10px 5px 30px;
+}
+
+p.chat-response,
+p.chat-propmt {
+    border-radius: 5px;
+}
+
+code {
+    white-space: break-spaces;
 }
 
 p.chat-propmt {
     white-space: pre-wrap;
     background-color: hsla(200, 100%, 90%, 1);
-    box-shadow: hsla(200, 100%, 90%, 1) 0 5px 5px;
+    box-shadow: hsla(200, 100%, 90%, 1) 0 5px 20px;
     margin-bottom: 10px;
+    padding: 5px 30px 5px 10px;
 }
 
 .greetings h1,
