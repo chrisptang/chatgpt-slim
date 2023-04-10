@@ -36,6 +36,7 @@ export default {
     completeDialogue(data, max_messages = 20) {
         //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
         //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
-        return this.execute('post', '/dialogues', { data, max_messages });
+        data.max_messages = max_messages;
+        return this.execute('post', '/dialogues', data);
     }
 }

@@ -1,37 +1,30 @@
 <script>
 import api from "@/api";
 import { useRoute } from "vue-router";
+
+const new_dialogue_obj = JSON.stringify({
+    title: "Dialogue with ChatGPT-3.5",
+    id: 0,
+    messages: [{
+        "role": "user",
+        "content": "Type anything to start dialogue"
+    }, {
+        "role": "assistant",
+        "content": "ChatGPT will resposne here."
+    }]
+});
+
 export default {
     name: "ChatList",
     data() {
         return {
             warn_msg: "",
-            dialogue_id: 0,
+            working_dialogue_id: 0,
             counting_num: 1,
             counting_timeout: null,
             refer_previous: false,
-            dialogues: [{
-                title: "Dialogue with ChatGPT-3.5",
-                id: 0,
-                messages: [{
-                    "role": "user",
-                    "content": "Type text to start dialogue"
-                }, {
-                    "role": "assistant",
-                    "content": "ChatGPT will resposne here."
-                }]
-            }],
-            working_dialogue: {
-                title: "Dialogue with ChatGPT-3.5",
-                id: 0,
-                messages: [{
-                    "role": "user",
-                    "content": "Type text to start dialogue"
-                }, {
-                    "role": "assistant",
-                    "content": "ChatGPT will resposne here."
-                }]
-            },
+            dialogues: [JSON.parse(new_dialogue_obj)],
+            working_dialogue: JSON.parse(new_dialogue_obj),
             prompt: "",
             size: 10,
             loading: false,
@@ -63,14 +56,20 @@ export default {
                 return;
             }
             this.startCounting();
-            let newChat = await api.newChat(prompt, this.refer_previous);
-            this.chats = this.chats.concat(newChat);
+            let data = { id: this.working_dialogue.id, messages: [{ role: "user", content: prompt }] };
+            this.working_dialogue.messages = this.working_dialogue.messages.concat(data.messages[0]);
+            let dialogue = await api.completeDialogue(data);
+            this.working_dialogue = dialogue;
             this.loading = false;
             this.prompt = "";
             this.endCounting();
         },
         async switchDialogue(id) {
-            this.dialogue_id = id;
+            this.working_dialogue_id = id;
+            if (id == 0) {
+                this.working_dialogue = JSON.parse(new_dialogue_obj);
+                return;
+            }
             this.working_dialogue = this.dialogues.filter(d => { return d.id == id })[0];
             console.log("switching to:", id, this.working_dialogue);
         },
@@ -85,6 +84,8 @@ export default {
                     record.messages = JSON.parse(record.messages);
                     return record;
                 });
+                this.working_dialogue = this.dialogues[0];
+                this.working_dialogue_id = this.working_dialogue.id;
             }
             this.loading = false;
         },
@@ -95,9 +96,13 @@ export default {
 <template>
     <div class="dialogue-container">
         <div class="dialogue-list">
-            <div v-for="dialogue in dialogues" :key="dialogue.id" :on-click="switchDialogue(dialogue.id)"
+            <div @click="switchDialogue(0)" class="dialogue-title">
+                <p :class="working_dialogue_id == 0 ? 'chat-propmt selected-dialogue' : 'chat-propmt'">New Dialogue</p>
+            </div>
+            <div v-for="dialogue in dialogues" :key="dialogue.id" @click="switchDialogue(dialogue.id)"
                 class="dialogue-title">
-                <p class="chat-propmt">{{ dialogue.title }}</p>
+                <p :class="working_dialogue_id == dialogue.id ? 'chat-propmt selected-dialogue' : 'chat-propmt'">
+                    {{ dialogue.title }}</p>
             </div>
         </div>
         <div class="dialogue-detail">
@@ -158,6 +163,11 @@ p.chat-response {
     overflow-wrap: anywhere;
     padding: 5px 10px;
     margin-left: 20px;
+}
+
+.selected-dialogue {
+    color: aliceblue;
+    font-weight: bolder;
 }
 
 p.chat-response,
@@ -253,8 +263,8 @@ p.chat-propmt {
     }
 
     .dialogue-container {
-        width: 98vw;
-        max-width: 1280px;
+        width: 100vw;
+        max-width: 1440px;
     }
 }
 

@@ -173,10 +173,10 @@ app.post('/api/dialogues', async (req, res) => {
 
     let record = await Dialogues.findOne({ where: { id: id } })
 
-    if (record.id > 0) {
+    if (record && record.id > 0) {
         messages = JSON.parse(record.messages).concat(messages[messages.length - 1]);
     } else {
-        record = { title: "Dialogue at " + new Date().toISOString(), messages };
+        record = { title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
         let newDialogue = await Dialogues.create(record);
         id = newDialogue.id;
     }
@@ -198,10 +198,10 @@ app.post('/api/dialogues', async (req, res) => {
     console.log(completionStr);
     messages = messages.concat(completion.choices[0].message);
 
-    let updateRecord = { id, messages: JSON.stringify(messages) };
-    Dialogues.update(updateRecord, { where: { id } });
+    let updateRecord = { messages: JSON.stringify(messages) };
+    await Dialogues.update(updateRecord, { where: { id } });
 
-    record = await Dialogues.findOne({ where: { id: id } })
+    record = await Dialogues.findOne({ where: { id } })
     record.messages = JSON.parse(record.messages);
     res.json(record);
 });
