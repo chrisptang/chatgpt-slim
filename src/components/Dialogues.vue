@@ -39,6 +39,9 @@ export default {
         async refresh() {
             await this.listDialogues();
         },
+        isMobile() {
+            return window.screen.width <= 1024;
+        },
         async startCounting() {
             this.counting_timeout = setInterval(function () { this.counting_num++; }.bind(this), 1000);
         },
@@ -107,7 +110,7 @@ export default {
 
 <template>
     <div class="dialogue-container">
-        <div class="dialogue-list">
+        <div class="dialogue-list" :hidden="isMobile()">
             <div @click="switchDialogue(0)" class="dialogue-title"
                 :class="working_dialogue_id == 0 ? 'dialogue-title selected-dialogue' : 'dialogue-title'">
                 <p class="chat-propmt">New Dialogue</p>
@@ -276,8 +279,6 @@ p.chat-propmt {
     }
 
     .dialogue-detail {
-        /* margin-left: 20px; */
-        /* width: 100%; */
         width: calc(100% - 360px);
         min-height: 98vh;
     }

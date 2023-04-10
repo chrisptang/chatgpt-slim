@@ -39,7 +39,7 @@ a,
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   #app {
     padding: 0 1rem;
     min-height: 100vh;
