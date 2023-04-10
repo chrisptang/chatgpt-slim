@@ -39,6 +39,21 @@ a,
   }
 }
 
+@media (max-width: 900px) {
+  #app {
+    padding: 0 1rem;
+    min-height: 100vh;
+  }
+
+  .dialogue-list{
+    display: none;
+  }
+
+  .dialogue-detail{
+    width: 100vw;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   #app {
     background-color: #444;

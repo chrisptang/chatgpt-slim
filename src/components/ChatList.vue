@@ -190,7 +190,11 @@ p.chat-propmt {
     background-color: lightgrey;
 }
 
-@media (min-width: 1024px) {}
+@media (max-width: 800px) {
+    #app{
+        padding: 0;
+    }
+}
 
 @media (prefers-color-scheme: dark) {
     .chat-list-ul li.single-chat {

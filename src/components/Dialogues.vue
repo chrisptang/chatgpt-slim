@@ -264,12 +264,6 @@ p.chat-propmt {
     background-color: lightgrey;
 }
 
-@media (max-width: 900px) {
-    main {
-        width: 98vw;
-    }
-}
-
 @media (min-width: 1024px) {
 
     .greetings h1,
