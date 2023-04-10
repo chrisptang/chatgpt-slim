@@ -1,7 +1,5 @@
 FROM node:17-alpine3.12
 
-ADD dist /app/frontend/
-
 ADD server/node_modules /app/server/node_modules
 ADD server/package.json /app/server/package.json
 ADD server/package-lock.json /app/server/package-lock.json
@@ -10,6 +8,8 @@ ADD server/openai-apis.js /app/server/server.js
 
 WORKDIR /app/server
 RUN npm install
+
+ADD dist /app/frontend/
 
 ENV PORT "5000"
 ENV SERVER_STATIC_PATH "/app/frontend"
