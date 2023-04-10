@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import fetch from 'node-fetch';
-import { Sequelize, Op, json } from 'sequelize';
+import { Chats, sync_database } from "./database-models.js"
 import { createServer } from 'http';
 import HttpsProxyAgent from "https-proxy-agent";
 
@@ -47,31 +47,6 @@ const static_path = process.env.SERVER_STATIC_PATH || '../dist';
 app.use(express.static(static_path))
 
 const server = createServer(app);
-
-const pg_user = process.env.PG_USER || 'postgres'
-    , pg_password = process.env.PG_PASSWORD || 'postgres-local'
-    , pg_host = process.env.PG_HOST || 'db-postgres'
-    , pg_port = process.env.PG_PORT || 5432
-    , pg_db = process.env.PG_DB || 'chatgpt';
-
-const pd_url = `postgres://${pg_user}:${pg_password}@${pg_host}:${pg_port}/${pg_db}`
-
-const database = new Sequelize(pd_url);
-
-let Chats = database.define('chat_records', {
-    ref_id: Sequelize.BIGINT,
-    propmt: Sequelize.STRING,
-    response: Sequelize.STRING,
-    create_time: Sequelize.DATE,
-    type: Sequelize.STRING
-}, {
-    paranoid: true,
-    indexes: [{
-        name: "idx_create_time",
-        unique: false,
-        fields: ["create_time"]
-    }]
-});
 
 async function getLatestChatRecords(max_previous = 5, order = "DESC") {
     if (max_previous <= 0) {
@@ -139,11 +114,6 @@ async function appendPreviousChat(data, max_previous = 5) {
     let records = await getLatestChatRecords(max_previous);
     console.log("refering records:", records);
     if (records && records.length > 0) {
-        // message format:
-        // let data = {
-        //     model: model,
-        //     messages: [{ role: "user", content: propmt }]
-        // }
         records.forEach(chat => {
             data.messages = data.messages.concat(JSON.parse(chat.response).choices[0].message);
             data.messages = data.messages.concat({ role: "user", content: chat.propmt });
@@ -171,10 +141,8 @@ app.get('/api/chats/:id', async (req, res) => {
 
 const port = parseInt(process.env.PORT || "8081")
 
-database
-    .sync({ force: false })
-    .then(() => {
-        app.listen(port, () => {
-            console.log(`listening to port localhost:${port}`)
-        })
+sync_database(() => {
+    app.listen(port, () => {
+        console.log(`listening to port localhost:${port}`)
     })
+});

@@ -78,6 +78,9 @@ export default {
 </script>
 
 <template>
+    <div class="greetings">
+        <h1 class="green">{{ "Chat with OpenAI GPT-3.5" }}</h1>
+    </div>
     <div class="chat-list">
         <ul class="chat-list-ul">
             <li v-for="chat in chats" :key="chat.prompt" class="single-chat">
@@ -137,8 +140,7 @@ h3 {
 
 p.chat-response {
     overflow-wrap: anywhere;
-    padding: 5px 10px 5px 10px;
-    margin-left: 20px;
+    padding: 5px 10px 5px 30px;
 }
 
 p.chat-response,
@@ -155,8 +157,12 @@ p.chat-propmt {
     background-color: hsla(200, 100%, 90%, 1);
     box-shadow: hsla(200, 100%, 90%, 1) 0 5px 20px;
     margin-bottom: 10px;
-    padding: 5px 10px 5px 10px;
-    margin-right: 20px;
+    padding: 5px 30px 5px 10px;
+}
+
+.greetings h1 {
+    text-align: center;
+    padding-top: 20px;
 }
 
 .new-chat .new-chat-box {
@@ -190,7 +196,11 @@ p.chat-propmt {
 }
 
 @media (min-width: 1024px) {
-    
+
+    .greetings h1,
+    .greetings h3 {
+        text-align: left;
+    }
 }
 
 @media (prefers-color-scheme: dark) {
