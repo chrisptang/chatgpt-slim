@@ -239,6 +239,7 @@ p.chat-propmt {
     max-width: 100vw;
     max-height: 300px;
     min-height: 50px;
+    border-radius: 5px;
 }
 
 .new-chat .new-chat-btn {
@@ -277,12 +278,13 @@ p.chat-propmt {
     }
 
     .dialogue-list {
-        width: 380px;
+        width: 300px;
     }
 
     .dialogue-detail {
-        margin-left: 20px;
-        width: 100%;
+        /* margin-left: 20px; */
+        /* width: 100%; */
+        width: calc(100% - 360px);
         min-height: 98vh;
     }
 
@@ -302,6 +304,29 @@ p.chat-propmt {
         background-color: #222;
         box-shadow: #111 0 5px 5px;
         color: #fff;
+    }
+
+    .chat-list-ul li.single-chat .chat-response {
+        background-color: #666;
+        color: white;
+    }
+
+    .new-chat .new-chat-box {
+        background-color: #ddd;
+    }
+
+    .dialogue-title.selected-dialogue .chat-propmt {
+        background-color: #222;
+        box-shadow: #111 0 5px 5px;
+        color: #fff;
+    }
+
+    .dialogue-title p.chat-propmt {
+        background-color: #555;
+    }
+
+    .dialogue-title:hover p.chat-propmt {
+        background-color: #777;
     }
 }
 </style>

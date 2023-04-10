@@ -165,6 +165,7 @@ p.chat-propmt {
     max-width: 100vw;
     max-height: 300px;
     min-height: 50px;
+    border-radius: 5px;
 }
 
 .new-chat .new-chat-btn {
@@ -189,9 +190,7 @@ p.chat-propmt {
     background-color: lightgrey;
 }
 
-@media (min-width: 1024px) {
-    
-}
+@media (min-width: 1024px) {}
 
 @media (prefers-color-scheme: dark) {
     .chat-list-ul li.single-chat {
@@ -203,6 +202,15 @@ p.chat-propmt {
         background-color: #222;
         box-shadow: #111 0 5px 5px;
         color: #fff;
+    }
+
+    .chat-list-ul li.single-chat .chat-response {
+        background-color: #666;
+        color: white;
+    }
+
+    .new-chat .new-chat-box {
+        background-color: #ddd;
     }
 }
 </style>

@@ -38,3 +38,9 @@ a,
     padding: 0 2rem;
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  #app {
+    background-color: #444;
+  }
+}
