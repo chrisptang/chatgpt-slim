@@ -157,6 +157,20 @@ app.get('/api/dialogues/:id', async (req, res) => {
     res.json(record);
 });
 
+//update dialogue, typical for title renaming.
+app.post('/api/dialogues/:id', async (req, res) => {
+    let id = req.params.id
+    let record = await Dialogues.findOne({ where: { id: id } })
+    if (!record) {
+        res.status = 404;
+        res.end();
+        return;
+    }
+    await Dialogues.update({ title: req.body.title }, { where: { id } });
+    record = await Chats.findOne({ where: { id: id } })
+    res.json(record);
+});
+
 app.post('/api/dialogues', async (req, res) => {
     //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
     //for new dialogue: {messages:[{role:'user', content:'how are you'}]}

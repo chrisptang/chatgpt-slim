@@ -28,6 +28,8 @@ export default {
             prompt: "",
             size: 10,
             loading: false,
+            editMode: [],
+            newTitle: '',
         };
     },
     async created() {
@@ -35,7 +37,7 @@ export default {
     },
     methods: {
         async refresh() {
-            this.listDialogues();
+            await this.listDialogues();
         },
         async startCounting() {
             this.counting_timeout = setInterval(function () { this.counting_num++; }.bind(this), 1000);
@@ -71,23 +73,33 @@ export default {
                 return;
             }
             this.working_dialogue = this.dialogues.filter(d => { return d.id == id })[0];
-            console.log("switching to:", id, this.working_dialogue);
+            console.log("switched to:", id, this.working_dialogue);
         },
         async listDialogues() {
             this.loading = true;
-            let size = useRoute().query.size || this.size || 10;
+            // let size = useRoute().query.size || this.size || 10;
             this.startCounting();
-            let records = await api.listDialogues(size);
+            let records = await api.listDialogues(20);
             this.endCounting();
             if (records && records.length > 0) {
                 this.dialogues = records.map(record => {
                     record.messages = JSON.parse(record.messages);
                     return record;
                 });
-                this.working_dialogue = this.dialogues[0];
-                this.working_dialogue_id = this.working_dialogue.id;
+                if (this.working_dialogue_id <= 0) {
+                    this.switchDialogue(this.working_dialogue.id);
+                }
             }
             this.loading = false;
+        },
+        enterEditMode(id) {
+            this.editMode[id] = true;
+        },
+        async exitEditMode(dialogue, $event) {
+            this.editMode[dialogue.id] = false;
+            console.log("about to update:", $event, dialogue);
+            await api.updateDialogue(dialogue);
+            await this.listDialogues();
         },
     },
 };
@@ -96,20 +108,27 @@ export default {
 <template>
     <div class="dialogue-container">
         <div class="dialogue-list">
-            <div @click="switchDialogue(0)" class="dialogue-title">
-                <p :class="working_dialogue_id == 0 ? 'chat-propmt selected-dialogue' : 'chat-propmt'">New Dialogue</p>
+            <div @click="switchDialogue(0)" class="dialogue-title"
+                :class="working_dialogue_id == 0 ? 'dialogue-title selected-dialogue' : 'dialogue-title'">
+                <p class="chat-propmt">New Dialogue</p>
             </div>
-            <div v-for="dialogue in dialogues" :key="dialogue.id" @click="switchDialogue(dialogue.id)"
-                class="dialogue-title">
-                <p :class="working_dialogue_id == dialogue.id ? 'chat-propmt selected-dialogue' : 'chat-propmt'">
-                    {{ dialogue.title }}</p>
+            <div v-for="dialogue in dialogues" :key="dialogue.id" @dblclick="enterEditMode(dialogue.id)"
+                @click="switchDialogue(dialogue.id)" class="dialogue-title"
+                :class="working_dialogue_id == dialogue.id ? 'dialogue-title selected-dialogue' : 'dialogue-title'">
+                <p class="chat-propmt">
+                    <span v-if="!editMode[dialogue.id]">{{ dialogue.title }}</span>
+                    <input v-else type="text" v-model="dialogue.title" @blur="exitEditMode(dialogue, $event)"
+                        @keydown.enter="exitEditMode(dialogue)">
+                </p>
             </div>
         </div>
         <div class="dialogue-detail">
             <div class="chat-list">
                 <ul class="chat-list-ul">
                     <li v-for="message in working_dialogue.messages" :key="message.content" class="single-chat">
-                        <p :class="message.role == 'user' ? 'chat-propmt' : 'chat-response'">{{ message.content }}</p>
+                        <p :class="message.role == 'user' ? 'chat-propmt' : 'chat-response'"
+                            v-html="message.role == 'user' ? message.content : window.markdownit().render(message.content)">
+                        </p>
                     </li>
                 </ul>
             </div>
@@ -165,8 +184,13 @@ p.chat-response {
     margin-left: 20px;
 }
 
-.selected-dialogue {
+.dialogue-title.selected-dialogue .chat-propmt {
     color: aliceblue;
+    font-weight: bolder;
+    background-color: hsla(200, 100%, 50%, 1);
+}
+
+.dialogue-title.selected-dialogue .chat-propmt span {
     font-weight: bolder;
 }
 
@@ -253,7 +277,7 @@ p.chat-propmt {
     }
 
     .dialogue-list {
-        /* width: 400px; */
+        width: 380px;
     }
 
     .dialogue-detail {

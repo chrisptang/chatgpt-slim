@@ -33,6 +33,9 @@ export default {
     listDialogue(id) {
         return this.execute('get', `/dialogues/${id}`)
     },
+    updateDialogue(dialogue) {
+        return this.execute('post', `/dialogues/${dialogue.id}`, dialogue)
+    },
     completeDialogue(data, max_messages = 20) {
         //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
         //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
