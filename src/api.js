@@ -26,5 +26,16 @@ export default {
     },
     newChat(propmt, refer_previous = false) {
         return this.execute('post', '/newChat', { propmt: propmt, refer_previous: refer_previous });
+    },
+    listDialogues(size = 5) {
+        return this.execute('get', `/dialogues?size=${size}`)
+    },
+    listDialogue(id) {
+        return this.execute('get', `/dialogues/${id}`)
+    },
+    completeDialogue(data, max_messages = 20) {
+        //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
+        //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
+        return this.execute('post', '/dialogues', { data, max_messages });
     }
 }

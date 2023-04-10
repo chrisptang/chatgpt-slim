@@ -5,24 +5,35 @@ export default {
     name: "ChatList",
     data() {
         return {
-            msg: "Chat with GPT-3.5",
             warn_msg: "",
+            dialogue_id: 0,
             counting_num: 1,
             counting_timeout: null,
             refer_previous: false,
-            chats: [{
-                propmt: "you can type any text to start chat with ChatGPT-3.5",
-                choices: [{
-                    "message": {
-                        "role": "assistant",
-                        "content": "ChatGPT will resposne here."
-                    },
-                    "finish_reason": "stop",
-                    "index": 0
+            dialogues: [{
+                title: "Dialogue with ChatGPT-3.5",
+                id: 0,
+                messages: [{
+                    "role": "user",
+                    "content": "Type text to start dialogue"
+                }, {
+                    "role": "assistant",
+                    "content": "ChatGPT will resposne here."
                 }]
             }],
+            working_dialogue: {
+                title: "Dialogue with ChatGPT-3.5",
+                id: 0,
+                messages: [{
+                    "role": "user",
+                    "content": "Type text to start dialogue"
+                }, {
+                    "role": "assistant",
+                    "content": "ChatGPT will resposne here."
+                }]
+            },
             prompt: "",
-            chat_count: 10,
+            size: 10,
             loading: false,
         };
     },
@@ -31,7 +42,7 @@ export default {
     },
     methods: {
         async refresh() {
-            this.listChats();
+            this.listDialogues();
         },
         async startCounting() {
             this.counting_timeout = setInterval(function () { this.counting_num++; }.bind(this), 1000);
@@ -58,17 +69,21 @@ export default {
             this.prompt = "";
             this.endCounting();
         },
-        async listChats() {
+        async switchDialogue(id) {
+            this.dialogue_id = id;
+            this.working_dialogue = this.dialogues.filter(d => { return d.id == id })[0];
+            console.log("switching to:", id, this.working_dialogue);
+        },
+        async listDialogues() {
             this.loading = true;
-            let counts = useRoute().query.count || this.chat_count || 10;
+            let size = useRoute().query.size || this.size || 10;
             this.startCounting();
-            let chatRecords = await api.listChats(counts);
+            let records = await api.listDialogues(size);
             this.endCounting();
-            if (chatRecords && chatRecords.length > 0) {
-                this.chats = chatRecords.map(record => {
-                    let chat = JSON.parse(record.response);
-                    chat.propmt = record.propmt;
-                    return chat
+            if (records && records.length > 0) {
+                this.dialogues = records.map(record => {
+                    record.messages = JSON.parse(record.messages);
+                    return record;
                 });
             }
             this.loading = false;
@@ -78,35 +93,36 @@ export default {
 </script>
 
 <template>
-    <div class="greetings">
-        <h1 class="green">{{ "Chat with OpenAI GPT-3.5" }}</h1>
-    </div>
-    <div class="chat-list">
-        <ul class="chat-list-ul">
-            <li v-for="chat in chats" :key="chat.prompt" class="single-chat">
-                <p class="chat-propmt">{{ chat.propmt }}</p>
-                <p class="chat-response" v-html="window.markdownit().render(chat.choices[0].message.content)">
+    <div class="dialogue-container">
+        <div class="dialogue-list">
+            <div v-for="dialogue in dialogues" :key="dialogue.id" :on-click="switchDialogue(dialogue.id)"
+                class="dialogue-title">
+                <p class="chat-propmt">{{ dialogue.title }}</p>
+            </div>
+        </div>
+        <div class="dialogue-detail">
+            <div class="chat-list">
+                <ul class="chat-list-ul">
+                    <li v-for="message in working_dialogue.messages" :key="message.content" class="single-chat">
+                        <p :class="message.role == 'user' ? 'chat-propmt' : 'chat-response'">{{ message.content }}</p>
+                    </li>
+                </ul>
+            </div>
+            <div class="new-chat">
+                <textarea placeholder="type anything you want to start conversation with GPT-3.5" id="prompt-textarea"
+                    type="textarea" v-model="prompt" class="new-chat-box" />
+                <p>
+                    <button value="chat" @click="completeChat()" :disabled="loading" class="new-chat-btn">chat</button>
                 </p>
-            </li>
-        </ul>
-    </div>
-    <div class="new-chat">
-        <textarea placeholder="type anything you want to start conversation with GPT-3.5" id="prompt-textarea"
-            type="textarea" v-model="prompt" class="new-chat-box" />
-        <p>
-            <button value="chat" @click="completeChat()" :disabled="loading" class="new-chat-btn">chat</button>
-            <label>
-                <input type="checkbox" style="margin: 0 5px 0 20px;" v-model="refer_previous"
-                    id="checkbox_refer_previous" />
-                Refer previous chats</label>
-        </p>
-        <p style="min-height: 30px;">
-            <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
-                `...${this.counting_num}s` }}
-            </span>
-            <span style="color: red;" :class="{ hide: !warn_msg || warn_msg.length <= 0 }">{{ warn_msg }}
-            </span>
-        </p>
+                <p style="min-height: 30px;">
+                    <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
+                        `...${this.counting_num}s` }}
+                    </span>
+                    <span style="color: red;" :class="{ hide: !warn_msg || warn_msg.length <= 0 }">{{ warn_msg }}
+                    </span>
+                </p>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -140,12 +156,17 @@ h3 {
 
 p.chat-response {
     overflow-wrap: anywhere;
-    padding: 5px 10px 5px 30px;
+    padding: 5px 10px;
+    margin-left: 20px;
 }
 
 p.chat-response,
 p.chat-propmt {
     border-radius: 5px;
+}
+
+.dialogue-container {
+    display: flex;
 }
 
 code {
@@ -157,7 +178,20 @@ p.chat-propmt {
     background-color: hsla(200, 100%, 90%, 1);
     box-shadow: hsla(200, 100%, 90%, 1) 0 5px 20px;
     margin-bottom: 10px;
-    padding: 5px 30px 5px 10px;
+    padding: 5px 10px;
+    margin-right: 20px;
+}
+
+.dialogue-title p.chat-propmt {
+    background-color: hsla(200, 100%, 75%, 1);
+}
+
+.dialogue-title {
+    cursor: pointer;
+}
+
+.dialogue-title:hover p.chat-propmt {
+    background-color: hsla(200, 100%, 65%, 1);
 }
 
 .greetings h1 {
@@ -195,11 +229,32 @@ p.chat-propmt {
     background-color: lightgrey;
 }
 
+@media (max-width: 900px) {
+    main {
+        width: 98vw;
+    }
+}
+
 @media (min-width: 1024px) {
 
     .greetings h1,
     .greetings h3 {
         text-align: left;
+    }
+
+    .dialogue-list {
+        width: 400px;
+    }
+
+    .dialogue-detail {
+        margin-left: 20px;
+        width: 100%;
+        min-height: 98vh;
+    }
+
+    .dialogue-container {
+        width: 98vw;
+        max-width: 1280px;
     }
 }
 

@@ -13,7 +13,6 @@ import Dialogues from './components/Dialogues.vue'
       <div><router-link to="/dialogues">Dialogues</router-link></div>
     </div>
   </div>
-  <!-- <ChatList /> -->
   <router-view></router-view>
 </template>
 

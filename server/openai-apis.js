@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import fetch from 'node-fetch';
-import { Chats, sync_database } from "./database-models.js"
+import { Chats, Dialogues, sync_database } from "./database-models.js"
 import { createServer } from 'http';
 import HttpsProxyAgent from "https-proxy-agent";
 
@@ -10,6 +10,8 @@ let app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+const DEFAUL_OPEN_AI_MODEL = "gpt-3.5-turbo-0301";
 
 console.log("about to start new chatgpt server with key:", (process.env.OPENAI_API_KEY || "0000000000").substring(0, 10));
 
@@ -69,7 +71,7 @@ function randomSeqId() {
 }
 
 app.post('/api/newChat', async (req, res) => {
-    let model = req.body.model || "gpt-3.5-turbo-0301";
+    let model = req.body.model || DEFAUL_OPEN_AI_MODEL;
     let propmt = req.body.propmt;
     let refer_previous = req.body.refer_previous || false;
     let max_previous = req.body.max_previous || 5;
@@ -135,8 +137,73 @@ app.get('/api/chats', async (req, res) => {
 
 app.get('/api/chats/:id', async (req, res) => {
     let id = req.params.id
-    let recod = await Chats.findOne({ where: { id: id } })
-    res.json(recod);
+    let record = await Chats.findOne({ where: { id: id } })
+    res.json(record);
+});
+
+app.get('/api/dialogues', async (req, res) => {
+    let size = req.query.size || 10, order = req.query.order || "DESC";
+    let latestRecords = await Dialogues.findAll({
+        order: [['id', order]],
+        limit: size
+    });
+    res.json(latestRecords);
+
+});
+
+app.get('/api/dialogues/:id', async (req, res) => {
+    let id = req.params.id
+    let record = await Dialogues.findOne({ where: { id: id } })
+    res.json(record);
+});
+
+app.post('/api/dialogues', async (req, res) => {
+    //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
+    //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
+    let id = req.body.id || 0;
+    let messages = req.body.messages;
+    if (!messages || messages.length == 0) {
+        res.status(400);
+        res.write("invalid request body:" + JSON.stringify(req.body));
+        res.end();
+        return;
+    }
+
+    console.log("about to start new dialogue:", req.body);
+
+    let record = await Dialogues.findOne({ where: { id: id } })
+
+    if (record.id > 0) {
+        messages = JSON.parse(record.messages).concat(messages[messages.length - 1]);
+    } else {
+        record = { title: "Dialogue at " + new Date().toISOString(), messages };
+        let newDialogue = await Dialogues.create(record);
+        id = newDialogue.id;
+    }
+
+    let model = req.body.model || DEFAUL_OPEN_AI_MODEL;
+    let data = {
+        model: model,
+        messages
+    }
+
+    const completion = await make_openai_request("chat/completions", data);
+    if (!completion || !completion.choices || completion.choices.length <= 0) {
+        console.warn("invalid response from openai:", completion, "\nrequest:", data);
+        res.status = 500;
+        res.end();
+        return;
+    }
+    let completionStr = JSON.stringify(completion, null, 4);
+    console.log(completionStr);
+    messages = messages.concat(completion.choices[0].message);
+
+    let updateRecord = { id, messages: JSON.stringify(messages) };
+    Dialogues.update(updateRecord, { where: { id } });
+
+    record = await Dialogues.findOne({ where: { id: id } })
+    record.messages = JSON.parse(record.messages);
+    res.json(record);
 });
 
 const port = parseInt(process.env.PORT || "8081")
