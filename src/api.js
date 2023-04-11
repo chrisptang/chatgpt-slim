@@ -5,6 +5,8 @@ const client = axios.create({
     json: true
 })
 
+const decoder = new TextDecoder('utf-8');
+
 export default {
     async execute(method, resource, data) {
         // inject the accessToken for each request
@@ -41,5 +43,28 @@ export default {
         //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
         data.max_messages = max_messages;
         return this.execute('post', '/dialogues', data);
+    },
+    async completeChunkedDialogue(data, callback) {
+        let baseURL = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8081/api'
+        const response = await fetch(`${baseURL}/chunked/dialogues`, {
+            method: "post",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+        const reader = response.body.getReader();
+
+        while (true) {
+            const { value, done } = await reader.read();
+
+            if (done) {
+                return true;
+            }
+
+            let chunk = JSON.parse(decoder.decode(value));
+            console.log("new arriving data:", chunk);
+            callback(chunk);
+        }
     }
 }
