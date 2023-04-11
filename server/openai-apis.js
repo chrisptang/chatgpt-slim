@@ -31,10 +31,11 @@ async function make_openai_request(path, data) {
         //POST as json
         postJson.method = "POST";
         postJson.body = JSON.stringify(data);
-        let resposne = await fetch(url, postJson);
-        return await resposne.json();
     }
     let resposne = await fetch(url, postJson);
+    if (data && data.stream) {
+        return resposne;
+    }
     if (resposne.status != 200) {
         console.error("error code:", resposne.status, await resposne.text());
         return {};
@@ -171,16 +172,49 @@ app.post('/api/dialogues/:id', async (req, res) => {
     res.json(record);
 });
 
-app.post('/api/dialogues', async (req, res) => {
+// used within dialogues
+async function build_dialogue_request_data(req, res, messages) {
     //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
     //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
     let id = req.body.id || 0;
-    let messages = req.body.messages;
+    console.log(req.body);
     if (!messages || messages.length == 0) {
         res.status(400);
         res.write("invalid request body:" + JSON.stringify(req.body));
         res.end();
-        return;
+        return null;
+    }
+
+    console.log("about to start new dialogue:", req.body);
+
+    let record = await Dialogues.findOne({ where: { id: id } })
+
+    if (record && record.id > 0) {
+        messages = JSON.parse(record.messages).concat(messages[messages.length - 1]);
+    } else {
+        record = { title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
+        let newDialogue = await Dialogues.create(record);
+        id = newDialogue.id;
+    }
+
+    let model = req.body.model || DEFAUL_OPEN_AI_MODEL;
+    return {
+        model: model,
+        messages
+    }
+}
+
+app.post('/api/dialogues', async (req, res) => {
+    //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
+    //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
+    let id = req.body.id || 0, messages = req.body.messages;
+
+    console.log(req.body);
+    if (!messages || messages.length == 0) {
+        res.status(400);
+        res.write("invalid request body:" + JSON.stringify(req.body));
+        res.end();
+        return null;
     }
 
     console.log("about to start new dialogue:", req.body);
@@ -218,6 +252,111 @@ app.post('/api/dialogues', async (req, res) => {
     record = await Dialogues.findOne({ where: { id } })
     record.messages = JSON.parse(record.messages);
     res.json(record);
+});
+
+app.get('/api/chunked/test', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Transfer-Encoding', 'chunked');
+
+    const data = [
+        { id: 1, name: 'John' },
+        { id: 2, name: 'Mary' },
+        { id: 3, name: 'Peter' },
+        { id: 4, name: 'Jane' },
+    ];
+
+    // Stream the data using setInterval
+    const timerId = setInterval(() => {
+        if (data.length > 0) {
+            const chunk = data.shift();
+            res.write(JSON.stringify(chunk));
+        } else {
+            clearInterval(timerId);
+            res.end();
+        }
+    }, 1000);
+});
+
+// request openai api in steaming mode
+app.post('/api/chunked/dialogues', async (req, res) => {
+    //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
+    //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
+    let id = req.body.id || 0, messages = req.body.messages;
+    console.log(req.body);
+    if (!messages || messages.length == 0) {
+        res.status(400);
+        res.write("invalid request body:" + JSON.stringify(req.body));
+        res.end();
+        return null;
+    }
+
+    console.log("about to start new dialogue:", req.body);
+
+    let record = await Dialogues.findOne({ where: { id: id } });
+
+    if (record && record.id > 0) {
+        messages = JSON.parse(record.messages).concat(messages[messages.length - 1]);
+    } else {
+        record = { title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
+        record = await Dialogues.create(record);
+        id = record.id;
+    }
+
+    let model = req.body.model || DEFAUL_OPEN_AI_MODEL;
+    let data = {
+        model: model,
+        messages
+    }
+
+    data.stream = true;
+    let chunk_index = 0;
+
+    res.header({
+        'Content-Type': 'application/json',
+        'Transfer-Encoding': 'chunked',
+        'Access-Control-Allow-Origin': '*'
+    });
+
+    const response = await make_openai_request("chat/completions", data);
+    let assistant_chunked_resposne = "", chunk_message = { role: "assistant", content: "" };
+    messages = messages.concat(chunk_message);
+
+    try {
+        for await (let chunk of response.body) {
+            chunk = chunk.toString()
+            console.log("chunk:", chunk_index, chunk);
+            if (chunk.startsWith("data: ")) {
+                let datas = chunk.split("data: ").filter(data => {
+                    return data.trim().length > 8;
+                }).map(data => {
+                    return JSON.parse(data.trim());
+                });
+
+                for (let data of datas) {
+                    let delta = { ...data.choices[0].delta };
+                    console.log(delta);
+                    if (delta && delta.content) {
+                        assistant_chunked_resposne += delta.content;
+                        console.log("assistant_chunked_resposne:", assistant_chunked_resposne);
+                        chunk_message.content = assistant_chunked_resposne;
+
+
+                        let updateRecord = { messages: JSON.stringify(messages) };
+                        await Dialogues.update(updateRecord, { where: { id } });
+                        record = await Dialogues.findOne({ where: { id: id } });
+                        res.write(JSON.stringify(record));
+                    }
+                }
+            }
+            chunk_index++;
+        }
+        // record = await Dialogues.findOne({ where: { id } });
+        // record.messages = JSON.parse(record.messages);
+        res.write(JSON.stringify({ done: true }));
+        res.end();
+    } catch (err) {
+        console.error(err.stack);
+    }
 });
 
 const port = parseInt(process.env.PORT || "8081")
