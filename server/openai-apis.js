@@ -303,7 +303,11 @@ app.post('/api/chunked/dialogues', async (req, res) => {
     try {
         for await (let chunk of response.body) {
             chunk = chunk.toString()
-            console.log("chunk:", chunk_index, chunk);
+            if (chunk_index % 20) {
+                // print debugger info every 20 chunks.
+                console.log("chunk:", chunk_index, "\n", chunk);
+            }
+
             if (chunk.startsWith("data: ")) {
                 let datas = chunk.split("data: ").filter(data => {
                     return data.trim().length > 8;
@@ -313,10 +317,8 @@ app.post('/api/chunked/dialogues', async (req, res) => {
 
                 for (let data of datas) {
                     let delta = { ...data.choices[0].delta };
-                    console.log(delta);
                     if (delta && delta.content) {
                         assistant_chunked_resposne += delta.content;
-                        console.log("assistant_chunked_resposne:", assistant_chunked_resposne);
                         chunk_message.content = assistant_chunked_resposne;
                         record.messages = messages;
                         res.write("data: " + JSON.stringify(record));
