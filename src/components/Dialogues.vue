@@ -73,6 +73,34 @@ export default {
             this.loading = false;
             this.endCounting();
         },
+        async completeChunkedDialogue() {
+            this.loading = true;
+            this.warn_msg = "";
+            let prompt = this.prompt;
+            if (!prompt || prompt.length <= 5) {
+                this.warn_msg = "invalid prompt";
+                this.loading = false;
+                this.prompt = "";
+                return;
+            }
+            this.startCounting();
+            let data = { id: this.working_dialogue.id, messages: [{ role: "user", content: prompt }] };
+            if (this.working_dialogue_id == 0) {
+                this.working_dialogue.messages = [];
+            }
+            this.working_dialogue.messages = this.working_dialogue.messages.concat(data.messages[0]);
+            this.prompt = "";
+            await api.completeChunkedDialogue(data, async function (dialogue) {
+                if (!dialogue || dialogue.id <= 0) {
+                    console.log("finished:", dialogue);
+                    return;
+                }
+                this.working_dialogue = dialogue;
+                this.working_dialogue_id = dialogue.id;
+            }.bind(this));
+            this.loading = false;
+            this.endCounting();
+        },
         async switchDialogue(id) {
             this.working_dialogue_id = id;
             if (id == 0) {
@@ -108,6 +136,11 @@ export default {
             await api.updateDialogue(dialogue);
             await this.listDialogues();
         },
+        async deleteDialogue(id) {
+            await api.deleteDialogue(id);
+            await this.listDialogues();
+            await this.switchDialogue(0);
+        }
     },
 };
 </script>
@@ -125,7 +158,10 @@ export default {
                 <p class="chat-propmt">
                     <span v-if="!editMode[dialogue.id]">{{ dialogue.title }}</span>
                     <input v-else type="text" v-model="dialogue.title" @blur="exitEditMode(dialogue, $event)"
-                        @keydown.enter="exitEditMode(dialogue)">
+                        @keydown.enter="exitEditMode(dialogue)" />
+                    <i class="delete-icon" @click="deleteDialogue(dialogue.id)">
+                        <img src="/delete.png" />
+                    </i>
                 </p>
             </div>
         </div>
@@ -143,7 +179,8 @@ export default {
                 <textarea placeholder="type anything you want to start conversation with GPT-3.5" id="prompt-textarea"
                     type="textarea" v-model="prompt" class="new-chat-box" />
                 <p>
-                    <button value="chat" @click="completeChat()" :disabled="loading" class="new-chat-btn">chat</button>
+                    <button value="chat" @click="completeChunkedDialogue()" :disabled="loading"
+                        class="new-chat-btn">chat</button>
                 </p>
                 <p style="min-height: 30px;">
                     <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
@@ -206,6 +243,16 @@ p.chat-propmt {
     border-radius: 5px;
 }
 
+.delete-icon {
+    padding-left: 20px;
+    display: none;
+}
+
+.delete-icon img {
+    width: 20px;
+    object-fit: contain;
+}
+
 .dialogue-container {
     display: flex;
 }
@@ -233,6 +280,10 @@ p.chat-propmt {
 
 .dialogue-title:hover p.chat-propmt {
     background-color: hsla(200, 100%, 65%, 1);
+}
+
+.dialogue-title:hover p.chat-propmt i.delete-icon {
+    display: inline;
 }
 
 .greetings h1 {

@@ -158,6 +158,16 @@ app.get('/api/dialogues/:id', async (req, res) => {
     res.json(record);
 });
 
+app.delete('/api/dialogues/:id', async (req, res) => {
+    let id = req.params.id;
+    let record = await Dialogues.findOne({ where: { id: id } });
+    if (record) {
+        await record.destroy();
+    }
+
+    res.json({ deleted: id });
+});
+
 //update dialogue, typical for title renaming.
 app.post('/api/dialogues/:id', async (req, res) => {
     let id = req.params.id
@@ -172,38 +182,7 @@ app.post('/api/dialogues/:id', async (req, res) => {
     res.json(record);
 });
 
-// used within dialogues
-async function build_dialogue_request_data(req, res, messages) {
-    //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
-    //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
-    let id = req.body.id || 0;
-    console.log(req.body);
-    if (!messages || messages.length == 0) {
-        res.status(400);
-        res.write("invalid request body:" + JSON.stringify(req.body));
-        res.end();
-        return null;
-    }
-
-    console.log("about to start new dialogue:", req.body);
-
-    let record = await Dialogues.findOne({ where: { id: id } })
-
-    if (record && record.id > 0) {
-        messages = JSON.parse(record.messages).concat(messages[messages.length - 1]);
-    } else {
-        record = { title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
-        let newDialogue = await Dialogues.create(record);
-        id = newDialogue.id;
-    }
-
-    let model = req.body.model || DEFAUL_OPEN_AI_MODEL;
-    return {
-        model: model,
-        messages
-    }
-}
-
+// create or append new user content to let server response.
 app.post('/api/dialogues', async (req, res) => {
     //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
     //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
@@ -339,20 +318,18 @@ app.post('/api/chunked/dialogues', async (req, res) => {
                         assistant_chunked_resposne += delta.content;
                         console.log("assistant_chunked_resposne:", assistant_chunked_resposne);
                         chunk_message.content = assistant_chunked_resposne;
-
-
-                        let updateRecord = { messages: JSON.stringify(messages) };
-                        await Dialogues.update(updateRecord, { where: { id } });
-                        record = await Dialogues.findOne({ where: { id: id } });
-                        res.write(JSON.stringify(record));
+                        record.messages = messages;
+                        res.write("data: " + JSON.stringify(record));
                     }
                 }
             }
             chunk_index++;
         }
-        // record = await Dialogues.findOne({ where: { id } });
-        // record.messages = JSON.parse(record.messages);
-        res.write(JSON.stringify({ done: true }));
+        let updateRecord = { messages: JSON.stringify(messages) };
+        await Dialogues.update(updateRecord, { where: { id } });
+        record = await Dialogues.findOne({ where: { id: id } });
+        record.messages = JSON.parse(record.messages);
+        res.write("data: " + JSON.stringify(record));
         res.end();
     } catch (err) {
         console.error(err.stack);

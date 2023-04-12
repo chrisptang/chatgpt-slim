@@ -35,6 +35,9 @@ export default {
     listDialogue(id) {
         return this.execute('get', `/dialogues/${id}`)
     },
+    deleteDialogue(id) {
+        return this.execute('delete', `/dialogues/${id}`)
+    },
     updateDialogue(dialogue) {
         return this.execute('post', `/dialogues/${dialogue.id}`, dialogue)
     },
@@ -55,16 +58,31 @@ export default {
         });
         const reader = response.body.getReader();
 
+        let chunk_index = 0
+
         while (true) {
             const { value, done } = await reader.read();
 
             if (done) {
                 return true;
             }
+            let chunk = decoder.decode(value);
+            try {
+                if (chunk.startsWith("data: ")) {
+                    let datas = chunk.split("data: ").filter(data => {
+                        return data.trim().length > 8;
+                    }).map(data => {
+                        return JSON.parse(data.trim());
+                    });
 
-            let chunk = JSON.parse(decoder.decode(value));
-            console.log("new arriving data:", chunk);
-            callback(chunk);
+                    for (let data of datas) {
+                        console.log("new arriving data:", chunk_index++, data);
+                        await callback(data);
+                    }
+                }
+            } catch (err) {
+                console.error("unable to handle chunk:\n", chunk, err);
+            }
         }
     }
 }
