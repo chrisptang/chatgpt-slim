@@ -78,32 +78,34 @@ export default {
 </script>
 
 <template>
-    <div class="chat-list">
-        <ul class="chat-list-ul">
-            <li v-for="chat in chats" :key="chat.prompt" class="single-chat">
-                <p class="chat-propmt">{{ chat.propmt }}</p>
-                <p class="chat-response" v-html="window.markdownit().render(chat.choices[0].message.content)">
-                </p>
-            </li>
-        </ul>
-    </div>
-    <div class="new-chat">
-        <textarea placeholder="type anything you want to start conversation with GPT-3.5" id="prompt-textarea"
-            type="textarea" v-model="prompt" class="new-chat-box" />
-        <p>
-            <button value="chat" @click="completeChat()" :disabled="loading" class="new-chat-btn">chat</button>
-            <label>
-                <input type="checkbox" style="margin: 0 5px 0 20px;" v-model="refer_previous"
-                    id="checkbox_refer_previous" />
-                Refer previous chats</label>
-        </p>
-        <p style="min-height: 30px;">
-            <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
-                `...${this.counting_num}s` }}
-            </span>
-            <span style="color: red;" :class="{ hide: !warn_msg || warn_msg.length <= 0 }">{{ warn_msg }}
-            </span>
-        </p>
+    <div style="width: 90vw;">
+        <div class="chat-list">
+            <ul class="chat-list-ul">
+                <li v-for="chat in chats" :key="chat.prompt" class="single-chat">
+                    <p class="chat-propmt">{{ chat.propmt }}</p>
+                    <p class="chat-response" v-html="window.markdownit().render(chat.choices[0].message.content)">
+                    </p>
+                </li>
+            </ul>
+        </div>
+        <div class="new-chat">
+            <textarea placeholder="type anything you want to start conversation with GPT-3.5" id="prompt-textarea"
+                type="textarea" v-model="prompt" class="new-chat-box" />
+            <p>
+                <button value="chat" @click="completeChat()" :disabled="loading" class="new-chat-btn">chat</button>
+                <label>
+                    <input type="checkbox" style="margin: 0 5px 0 20px;" v-model="refer_previous"
+                        id="checkbox_refer_previous" />
+                    Refer previous chats</label>
+            </p>
+            <p style="min-height: 30px;">
+                <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
+                    `...${this.counting_num}s` }}
+                </span>
+                <span style="color: red;" :class="{ hide: !warn_msg || warn_msg.length <= 0 }">{{ warn_msg }}
+                </span>
+            </p>
+        </div>
     </div>
 </template>
 
@@ -121,6 +123,7 @@ h1 {
 .chat-list-ul {
     list-style: none;
     padding: 0 0 20px 0;
+    min-height: calc(100vh - 260px);
 }
 
 .chat-list-ul li.single-chat {
@@ -191,7 +194,7 @@ p.chat-propmt {
 }
 
 @media (max-width: 800px) {
-    #app{
+    #app {
         padding: 0;
     }
 }
