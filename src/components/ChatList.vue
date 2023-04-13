@@ -9,7 +9,7 @@ export default {
             warn_msg: "",
             counting_num: 1,
             counting_timeout: null,
-            refer_previous: false,
+            // refer_previous: false,
             chats: [{
                 propmt: "you can type any text to start chat with ChatGPT-3.5",
                 choices: [{
@@ -34,12 +34,51 @@ export default {
             this.listChats();
         },
         async startCounting() {
+            this.loading = true;
             this.counting_timeout = setInterval(function () { this.counting_num++; }.bind(this), 1000);
         },
         async endCounting() {
             if (this.counting_timeout > 0) {
                 window.clearInterval(this.counting_timeout);
             }
+            this.loading = false;
+        },
+        async completeChatChunked() {
+            this.warn_msg = "";
+            let prompt = this.prompt;
+            if (!prompt || prompt.length <= 5) {
+                this.warn_msg = "invalid prompt";
+                this.loading = false;
+                this.prompt = "";
+                return;
+            }
+            let newChat = await api.createChat(prompt);
+            newChat = this.converResponseToChat(newChat);
+            this.chats = this.chats.concat(newChat);
+            this.prompt = "";
+            await this.completeChatChunkedById(newChat.id, { prompt });
+        },
+        async completeChatChunkedById(id, data = {}) {
+            this.startCounting();
+            await api.completeChatChunked(id, data, async function (chat) {
+                chat = this.converResponseToChat(chat);
+                if (!chat || chat.id <= 0) {
+                    console.log("finished:", chat);
+                    return;
+                }
+                let workingChatIndex = this.chats.findIndex(chatInArr => {
+                    return chatInArr.id === chat.id;
+                });
+                this.chats[workingChatIndex] = chat;
+            }.bind(this));
+            this.endCounting();
+        },
+        async deleteChat(id) {
+            await api.deleteChat(id);
+            await this.refresh();
+        },
+        async recompleteChat(id) {
+            await this.completeChatChunkedById(id);
         },
         async completeChat() {
             this.loading = true;
@@ -52,7 +91,7 @@ export default {
                 return;
             }
             this.startCounting();
-            let newChat = await api.newChat(prompt, this.refer_previous);
+            let newChat = await api.newChat(prompt);
             this.chats = this.chats.concat(newChat);
             this.loading = false;
             this.prompt = "";
@@ -60,18 +99,28 @@ export default {
         },
         async listChats() {
             this.loading = true;
-            let counts = useRoute().query.count || this.chat_count || 10;
+            let counts = this.$route.query.count || this.chat_count || 10;
             this.startCounting();
             let chatRecords = await api.listChats(counts);
             this.endCounting();
             if (chatRecords && chatRecords.length > 0) {
-                this.chats = chatRecords.map(record => {
-                    let chat = JSON.parse(record.response);
-                    chat.propmt = record.propmt;
-                    return chat
-                });
+                this.chats = chatRecords.map(this.converResponseToChat);
             }
             this.loading = false;
+        },
+        converResponseToChat(record) {
+            let { id, propmt, response } = { ...record };
+            if (!response) {
+                response = "{}";
+            }
+            let chat = response;
+            if (typeof chat === "string") { chat = JSON.parse(chat); }
+            if (!chat.choices && !chat.assistant_chunked_resposne) {
+                chat.assistant_chunked_resposne = "<empty>";
+            }
+            chat.propmt = propmt;
+            chat.id = id
+            return chat
         },
     },
 };
@@ -82,21 +131,27 @@ export default {
         <div class="chat-list">
             <ul class="chat-list-ul">
                 <li v-for="chat in chats" :key="chat.prompt" class="single-chat">
-                    <p class="chat-propmt">{{ chat.propmt }}</p>
-                    <p class="chat-response" v-html="window.markdownit().render(chat.choices[0].message.content)">
+                    <p class="chat-propmt"><span>{{ chat.propmt }}</span>
+                        <i class="refresh-icon action-icon" @click="recompleteChat(chat.id)">
+                            <img src="/refresh.png" />
+                        </i>
+                        <i class="delete-icon action-icon" @click="deleteChat(chat.id)">
+                            <img src="/delete.png" />
+                        </i>
+                    </p>
+                    <p class="chat-response"
+                        v-html="window.markdownit().render(chat.assistant_chunked_resposne || chat.choices[0].message.content)">
                     </p>
                 </li>
             </ul>
         </div>
-        <div class="new-chat">
+        <div class="new-chat" id="newChat">
             <textarea placeholder="type anything you want to start conversation with GPT-3.5" id="prompt-textarea"
                 type="textarea" v-model="prompt" class="new-chat-box" />
             <p>
-                <button value="chat" @click="completeChat()" :disabled="loading" class="new-chat-btn">chat</button>
-                <label>
-                    <input type="checkbox" style="margin: 0 5px 0 20px;" v-model="refer_previous"
-                        id="checkbox_refer_previous" />
-                    Refer previous chats</label>
+                <button value="chat" @click="completeChatChunked()" :disabled="loading" class="new-chat-btn">chat</button>
+                <a style="margin-left: 20px;" href="/?count=2">Latest 2 chats</a>
+                <a style="margin-left: 20px;" href="/?count=200">All chats</a>
             </p>
             <p style="min-height: 30px;">
                 <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
@@ -112,6 +167,34 @@ export default {
 <style scoped>
 .hide {
     visibility: hidden !important;
+}
+
+.action-icon.refresh-icon {
+    margin-left: 3rem;
+}
+
+.action-icon {
+    display: none;
+    margin-left: 1rem;
+    align-items: right;
+    cursor: pointer;
+}
+
+.single-chat:hover .action-icon {
+    display: inline-block;
+}
+
+.action-icon:active {
+    background-color: hsla(200, 100%, 90%, 1);
+}
+
+.action-icon img {
+    width: 20px;
+    object-fit: contain;
+}
+
+.action-icon.refresh-icon img {
+    width: 18px;
 }
 
 h1 {

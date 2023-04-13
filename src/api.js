@@ -26,8 +26,16 @@ export default {
     listChat(id) {
         return this.execute('get', `/chats/${id}`)
     },
+    deleteChat(id) {
+        return this.execute('delete', `/chats/${id}`)
+    },
     newChat(propmt, refer_previous = false) {
         return this.execute('post', '/newChat', { propmt: propmt, refer_previous: refer_previous });
+    },
+
+    // just insert a record of chat:
+    createChat(propmt) {
+        return this.execute('post', '/chats', { propmt });
     },
     listDialogues(size = 5) {
         return this.execute('get', `/dialogues?size=${size}`)
@@ -48,8 +56,14 @@ export default {
         return this.execute('post', '/dialogues', data);
     },
     async completeChunkedDialogue(data, callback) {
+        await this.chunkedApi("chunked/dialogues", data, callback);
+    },
+    async completeChatChunked(id, data, callback) {
+        await this.chunkedApi(`chats/${id}`, data, callback);
+    },
+    async chunkedApi(path, data, callback) {
         let baseURL = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8081/api'
-        const response = await fetch(`${baseURL}/chunked/dialogues`, {
+        const response = await fetch(`${baseURL}/${path}`, {
             method: "post",
             headers: {
                 "Content-Type": "application/json"
@@ -76,7 +90,9 @@ export default {
                     });
 
                     for (let data of datas) {
-                        console.log("new arriving data:", chunk_index++, data);
+                        if (++chunk_index % 20 == 0) {
+                            console.log("new arriving data:", chunk_index, data);
+                        }
                         await callback(data);
                     }
                 }

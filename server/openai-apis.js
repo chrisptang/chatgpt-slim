@@ -141,10 +141,107 @@ app.get('/api/chats', async (req, res) => {
     res.json(records);
 });
 
+app.post('/api/chats', async (req, res) => {
+    let propmt = req.body.propmt;
+    if (!propmt) {
+        res.json({ error: true, msg: `invalid ${propmt}` });
+        return
+    }
+    let record = await Chats.create({
+        ref_id: randomSeqId(),
+        propmt: propmt,
+        response: "",
+        create_time: new Date()
+    });
+
+    res.json(record)
+});
+
 app.get('/api/chats/:id', async (req, res) => {
     let id = req.params.id
     let record = await Chats.findOne({ where: { id: id } })
     res.json(record);
+});
+
+app.delete('/api/chats/:id', async (req, res) => {
+    let id = req.params.id
+    let record = await Chats.findOne({ where: { id: id } })
+    if (record) {
+        await record.destroy();
+    }
+    res.json({ deleted: true });
+});
+
+const chunk_header = {
+    'Content-Type': 'application/json',
+    'Transfer-Encoding': 'chunked',
+    'Access-Control-Allow-Origin': '*'
+};
+
+//complete this chat:
+app.post('/api/chats/:id', async (req, res) => {
+    let id = req.params.id
+    let propmt = req.body.propmt;
+    let record = await Chats.findOne({ where: { id: id } })
+    if (!record) {
+        res.status(404);
+        res.end();
+        return;
+    }
+    propmt = propmt || record.propmt;
+
+    let model = req.body.model || DEFAUL_OPEN_AI_MODEL;
+    let data = {
+        model: model,
+        stream: true,
+        messages: [{
+            role: "user",
+            content: propmt
+        }]
+    }
+
+    res.header(chunk_header);
+
+    const response = await make_openai_request("chat/completions", data);
+    let assistant_chunked_resposne = "";
+
+    let chunk_index = 0;
+
+    try {
+        for await (let chunk of response.body) {
+            chunk = chunk.toString()
+            if (chunk_index % 20) {
+                // print debugger info every 20 chunks.
+                console.log("chunk:", chunk_index, "\n", chunk);
+            }
+
+            if (chunk.startsWith("data: ")) {
+                let datas = chunk.split("data: ").filter(data => {
+                    return data.trim().length > 8;
+                }).map(data => {
+                    return JSON.parse(data.trim());
+                });
+
+                for (let data of datas) {
+                    let delta = { ...data.choices[0].delta };
+                    if (delta && delta.content) {
+                        assistant_chunked_resposne += delta.content;
+                        record.response = { assistant_chunked_resposne }
+                        res.write("data: " + JSON.stringify(record));
+                    }
+                }
+            }
+            chunk_index++;
+        }
+        let updateRecord = { response: JSON.stringify({ assistant_chunked_resposne }) };
+        await Chats.update(updateRecord, { where: { id } });
+        record = await Chats.findOne({ where: { id: id } });
+        record.response = JSON.parse(record.response);
+        res.write("data: " + JSON.stringify(record));
+        res.end();
+    } catch (err) {
+        console.error(err.stack);
+    }
 });
 
 app.get('/api/dialogues', async (req, res) => {
@@ -162,6 +259,7 @@ app.get('/api/dialogues/:id', async (req, res) => {
     let record = await Dialogues.findOne({ where: { id: id } })
     res.json(record);
 });
+
 
 app.delete('/api/dialogues/:id', async (req, res) => {
     let id = req.params.id;
@@ -238,28 +336,6 @@ app.post('/api/dialogues', async (req, res) => {
     res.json(record);
 });
 
-app.get('/api/chunked/test', (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Transfer-Encoding', 'chunked');
-
-    const data = [
-        { id: 1, name: 'John' },
-        { id: 2, name: 'Mary' },
-        { id: 3, name: 'Peter' },
-        { id: 4, name: 'Jane' },
-    ];
-
-    // Stream the data using setInterval
-    const timerId = setInterval(() => {
-        if (data.length > 0) {
-            const chunk = data.shift();
-            res.write(JSON.stringify(chunk));
-        } else {
-            clearInterval(timerId);
-            res.end();
-        }
-    }, 1000);
-});
 
 // request openai api in steaming mode
 app.post('/api/chunked/dialogues', async (req, res) => {
@@ -295,11 +371,7 @@ app.post('/api/chunked/dialogues', async (req, res) => {
     data.stream = true;
     let chunk_index = 0;
 
-    res.header({
-        'Content-Type': 'application/json',
-        'Transfer-Encoding': 'chunked',
-        'Access-Control-Allow-Origin': '*'
-    });
+    res.header(chunk_header);
 
     const response = await make_openai_request("chat/completions", data);
     let assistant_chunked_resposne = "", chunk_message = { role: "assistant", content: "" };
@@ -342,6 +414,7 @@ app.post('/api/chunked/dialogues', async (req, res) => {
         console.error(err.stack);
     }
 });
+
 
 const port = parseInt(process.env.PORT || "8081")
 
