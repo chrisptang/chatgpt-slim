@@ -4,22 +4,33 @@ import Dialogues from './components/Dialogues.vue'
 </script>
 
 <template>
-  <div class="header">
-    <div class="greetings">
-      <h1 class="green">{{ "Chat with OpenAI GPT-3.5" }}</h1>
+  <div>
+    <div class="header sticky-header">
+      <div class="greetings">
+        <h1 class="green">{{ "Chat with OpenAI GPT-3.5" }}</h1>
+      </div>
+      <div class="header-links">
+        <div><router-link to="/">Home</router-link></div>
+        <div><router-link to="/dialogues">Dialogues</router-link></div>
+      </div>
     </div>
-    <div class="header-links">
-      <div><router-link to="/">Home</router-link></div>
-      <div><router-link to="/dialogues">Dialogues</router-link></div>
+    <div class="view-container">
+      <router-view></router-view>
     </div>
   </div>
-  <router-view></router-view>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+.sticky-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+
+.view-container{
+  margin-top: calc(4.5rem);
 }
 
 .header-links {
@@ -30,7 +41,7 @@ header {
 
 .greetings h1 {
   text-align: center;
-  padding-top: 20px;
+  padding-top: 0.5rem;
 }
 
 .logo {
@@ -66,7 +77,14 @@ nav a:first-of-type {
 .header {
   display: flex;
   align-items: baseline;
-  padding-right: calc(var(--section-gap) / 2);
+  padding: 0 calc(var(--section-gap) / 4);
+  background-color: white;
+}
+
+@media(prefers-color-scheme: dark) {
+  .header {
+    background-color: #0a0a0a;
+  }
 }
 
 @media(max-width: 700px) {
@@ -75,11 +93,11 @@ nav a:first-of-type {
     padding-right: 0;
   }
 
-  .header-links{
+  .header-links {
     width: 100%;
   }
 
-  .header h1{
+  .header h1 {
     font-size: 1.5rem;
   }
 }
