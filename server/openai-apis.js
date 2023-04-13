@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from "path";
 import bodyParser from 'body-parser';
 import fetch from 'node-fetch';
 import { Chats, Dialogues, sync_database } from "./database-models.js"
@@ -10,6 +11,9 @@ let app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+const static_path = process.env.SERVER_STATIC_PATH || '../dist';
+app.use(express.static(static_path))
 
 const DEFAUL_OPEN_AI_MODEL = "gpt-3.5-turbo-0301";
 
@@ -44,10 +48,11 @@ async function make_openai_request(path, data) {
 }
 
 let test = await make_openai_request("models")
-console.log("test openai:", test);
-
-const static_path = process.env.SERVER_STATIC_PATH || '../dist';
-app.use(express.static(static_path))
+console.log("available openai models:", test.data.map(model => {
+    let { id, owned_by, created } = { ...model };
+    created = new Date(created * 1000).toISOString().split(".")[0];
+    return { id, owned_by, created };
+}));
 
 const server = createServer(app);
 
@@ -339,6 +344,18 @@ app.post('/api/chunked/dialogues', async (req, res) => {
 });
 
 const port = parseInt(process.env.PORT || "8081")
+
+//error handling
+app.use((req, res) => {
+    if (req.url.indexOf("/api/") > 0) {
+        //send json for api calls
+        res.status(500).json({ error: true });
+        res.end();
+    } else {
+        // fullback to /home
+        res.sendFile(path.join(static_path, 'index.html'));
+    }
+});
 
 sync_database(() => {
     app.listen(port, () => {
