@@ -178,10 +178,16 @@ export default {
     margin-left: 1rem;
     align-items: right;
     cursor: pointer;
+    border-radius: 2px;
+    padding: 0px 5px;
 }
 
 .single-chat:hover .action-icon {
     display: inline-block;
+}
+
+.action-icon:hover {
+    background-color: hsla(200, 100%, 70%, 1);
 }
 
 .action-icon:active {
@@ -189,12 +195,12 @@ export default {
 }
 
 .action-icon img {
-    width: 20px;
+    width: 16px;
     object-fit: contain;
 }
 
 .action-icon.refresh-icon img {
-    width: 18px;
+    width: 14px;
 }
 
 h1 {
@@ -286,6 +292,18 @@ p.chat-propmt {
     .chat-list-ul li.single-chat {
         color: #e0e0e0;
         background: #444;
+    }
+
+    .single-chat:hover .action-icon {
+        background-color: #fff;
+    }
+
+    .action-icon:hover {
+        background-color: #cdcdcd;
+    }
+
+    .action-icon:active {
+        background-color: #aaa;
     }
 
     p.chat-propmt {
