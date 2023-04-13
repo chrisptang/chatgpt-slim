@@ -240,7 +240,7 @@ app.post('/api/chats/:id', async (req, res) => {
         res.write("data: " + JSON.stringify(record));
         res.end();
     } catch (err) {
-        console.error(err.stack);
+        console.error(err.message, err.stack);
     }
 });
 
@@ -411,7 +411,7 @@ app.post('/api/chunked/dialogues', async (req, res) => {
         res.write("data: " + JSON.stringify(record));
         res.end();
     } catch (err) {
-        console.error(err.stack);
+        console.error(err.message, err.stack);
     }
 });
 

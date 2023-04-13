@@ -12,8 +12,8 @@ const database = new Sequelize(pd_url);
 
 const Chats = database.define('chat_records', {
     ref_id: Sequelize.BIGINT,
-    propmt: Sequelize.STRING,
-    response: Sequelize.STRING,
+    propmt: Sequelize.TEXT,
+    response: Sequelize.TEXT,
     create_time: Sequelize.DATE,
     type: Sequelize.STRING
 }, {
@@ -33,8 +33,8 @@ const Chats = database.define('chat_records', {
 // ]
 
 const Dialogues = database.define('dialogues', {
-    title: Sequelize.STRING,
-    messages: Sequelize.STRING,
+    title: Sequelize.STRING(512),
+    messages: Sequelize.TEXT,
     user: Sequelize.STRING
 }, {
     paranoid: true,
