@@ -34,7 +34,10 @@ function setupLoginWithGithub(app) {
                     req.user = JSON.parse(user.api_response);
                 }
             }
-            console.log("user:", req.cookies.token);
+            if (typeof req.user === "string") {
+                req.user = JSON.parse(req.user);
+            }
+            console.log("user:", typeof req.user, req.user);
             next();
         } catch (err) {
             console.log("handle request failed:", req.url, err.message, err.stack)

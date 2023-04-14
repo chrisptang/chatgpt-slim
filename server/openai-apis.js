@@ -62,14 +62,15 @@ console.log("available openai models:", test.data.map(model => {
 
 const server = createServer(app);
 
-async function getLatestChatRecords(max_previous = 5, order = "DESC") {
+async function getLatestChatRecords(user, max_previous = 5, order = "DESC") {
     if (max_previous <= 0) {
         return [];
     }
     try {
         const latestRecords = await Chats.findAll({
             order: [['create_time', order]],
-            limit: max_previous
+            limit: max_previous,
+            where: { user }
         });
         return latestRecords;
     } catch (error) {
@@ -100,7 +101,8 @@ app.post('/api/newChat', async (req, res) => {
         messages: [{ role: "user", content: propmt }]
     }
     if (refer_previous) {
-        await appendPreviousChat(data, max_previous);
+        let user = req.user.login
+        await appendPreviousChat(user, data, max_previous);
         console.log("added previous chats:", data);
     }
     console.log("starting chat with:", data);
@@ -117,15 +119,16 @@ app.post('/api/newChat', async (req, res) => {
         ref_id: randomSeqId(),
         propmt: propmt,
         response: completionStr,
-        create_time: new Date()
+        create_time: new Date(),
+        user: req.user.login
     };
     await Chats.create(dbItem);
     completion.propmt = propmt;
     res.json(completion)
 });
 
-async function appendPreviousChat(data, max_previous = 5) {
-    let records = await getLatestChatRecords(max_previous);
+async function appendPreviousChat(user, data, max_previous = 5) {
+    let records = await getLatestChatRecords(user, max_previous);
     console.log("refering records:", records);
     if (records && records.length > 0) {
         records.forEach(chat => {
@@ -140,7 +143,9 @@ async function appendPreviousChat(data, max_previous = 5) {
 
 app.get('/api/chats', async (req, res) => {
     let size = req.query.size || 10;
-    let records = await getLatestChatRecords(size);
+    let user = req.user.login;
+    console.log("chats:", user);
+    let records = await getLatestChatRecords(user, size);
     if (records && records.length > 1) {
         records = records.reverse();
     }
@@ -157,7 +162,8 @@ app.post('/api/chats', async (req, res) => {
         ref_id: randomSeqId(),
         propmt: propmt,
         response: "",
-        create_time: new Date()
+        create_time: new Date(),
+        user: req.user.login
     });
 
     res.json(record)
@@ -165,13 +171,13 @@ app.post('/api/chats', async (req, res) => {
 
 app.get('/api/chats/:id', async (req, res) => {
     let id = req.params.id
-    let record = await Chats.findOne({ where: { id: id } })
+    let record = await Chats.findOne({ where: { id, user: req.user.login } })
     res.json(record);
 });
 
 app.delete('/api/chats/:id', async (req, res) => {
     let id = req.params.id
-    let record = await Chats.findOne({ where: { id: id } })
+    let record = await Chats.findOne({ where: { id, user: req.user.login } })
     if (record) {
         await record.destroy();
     }
@@ -186,9 +192,9 @@ const chunk_header = {
 
 //complete this chat:
 app.post('/api/chats/:id', async (req, res) => {
-    let id = req.params.id
+    let id = req.params.id, user = req.user.login;
     let propmt = req.body.propmt;
-    let record = await Chats.findOne({ where: { id: id } })
+    let record = await Chats.findOne({ where: { id, user } })
     if (!record) {
         res.status(404);
         res.end();
@@ -240,7 +246,7 @@ app.post('/api/chats/:id', async (req, res) => {
         }
         let updateRecord = { response: JSON.stringify({ assistant_chunked_resposne }) };
         await Chats.update(updateRecord, { where: { id } });
-        record = await Chats.findOne({ where: { id: id } });
+        record = await Chats.findOne({ where: { id, user } });
         record.response = JSON.parse(record.response);
         res.write("data: " + JSON.stringify(record));
         res.end();
@@ -251,24 +257,28 @@ app.post('/api/chats/:id', async (req, res) => {
 
 app.get('/api/dialogues', async (req, res) => {
     let size = req.query.size || 10, order = req.query.order || "DESC";
+    let user = req.user.login;
     let latestRecords = await Dialogues.findAll({
         order: [['id', order]],
-        limit: size
+        limit: size,
+        where: { user }
     });
     res.json(latestRecords);
 
 });
 
 app.get('/api/dialogues/:id', async (req, res) => {
-    let id = req.params.id
-    let record = await Dialogues.findOne({ where: { id: id } })
+    let id = req.params.id;
+    let user = req.user.login;
+    let record = await Dialogues.findOne({ where: { id, user } })
     res.json(record);
 });
 
 
 app.delete('/api/dialogues/:id', async (req, res) => {
     let id = req.params.id;
-    let record = await Dialogues.findOne({ where: { id: id } });
+    let user = req.user.login;
+    let record = await Dialogues.findOne({ where: { id, user } });
     if (record) {
         await record.destroy();
     }
@@ -279,14 +289,15 @@ app.delete('/api/dialogues/:id', async (req, res) => {
 //update dialogue, typical for title renaming.
 app.post('/api/dialogues/:id', async (req, res) => {
     let id = req.params.id
-    let record = await Dialogues.findOne({ where: { id: id } })
+    let user = req.user.login;
+    let record = await Dialogues.findOne({ where: { id, user } })
     if (!record) {
         res.status = 404;
         res.end();
         return;
     }
     await Dialogues.update({ title: req.body.title }, { where: { id } });
-    record = await Chats.findOne({ where: { id: id } })
+    record = await Chats.findOne({ where: { id } })
     res.json(record);
 });
 
@@ -295,6 +306,7 @@ app.post('/api/dialogues', async (req, res) => {
     //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
     //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
     let id = req.body.id || 0, messages = req.body.messages;
+    let user = req.user.login;
 
     console.log(req.body);
     if (!messages || messages.length == 0) {
@@ -306,12 +318,12 @@ app.post('/api/dialogues', async (req, res) => {
 
     console.log("about to start new dialogue:", req.body);
 
-    let record = await Dialogues.findOne({ where: { id: id } })
+    let record = await Dialogues.findOne({ where: { id, user } })
 
     if (record && record.id > 0) {
         messages = JSON.parse(record.messages).concat(messages[messages.length - 1]);
     } else {
-        record = { title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
+        record = { user, title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
         let newDialogue = await Dialogues.create(record);
         id = newDialogue.id;
     }
@@ -346,7 +358,7 @@ app.post('/api/dialogues', async (req, res) => {
 app.post('/api/chunked/dialogues', async (req, res) => {
     //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
     //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
-    let id = req.body.id || 0, messages = req.body.messages;
+    let id = req.body.id || 0, messages = req.body.messages, user = req.user.login;
     console.log(req.body);
     if (!messages || messages.length == 0) {
         res.status(400);
@@ -357,12 +369,12 @@ app.post('/api/chunked/dialogues', async (req, res) => {
 
     console.log("about to start new dialogue:", req.body);
 
-    let record = await Dialogues.findOne({ where: { id: id } });
+    let record = await Dialogues.findOne({ where: { id, user } });
 
     if (record && record.id > 0) {
         messages = JSON.parse(record.messages).concat(messages[messages.length - 1]);
     } else {
-        record = { title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
+        record = { user, title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
         record = await Dialogues.create(record);
         id = record.id;
     }
@@ -410,7 +422,7 @@ app.post('/api/chunked/dialogues', async (req, res) => {
         }
         let updateRecord = { messages: JSON.stringify(messages) };
         await Dialogues.update(updateRecord, { where: { id } });
-        record = await Dialogues.findOne({ where: { id: id } });
+        record = await Dialogues.findOne({ where: { id } });
         record.messages = JSON.parse(record.messages);
         res.write("data: " + JSON.stringify(record));
         res.end();
