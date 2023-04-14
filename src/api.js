@@ -24,6 +24,9 @@ export default {
             }
         })
     },
+    listUserInfo() {
+        return this.execute('get', "/me")
+    },
     listChats(chat_count = 5) {
         return this.execute('get', `/chats?size=${chat_count}`)
     },

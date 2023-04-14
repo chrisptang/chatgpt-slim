@@ -1,6 +1,5 @@
 <script setup>
-import ChatList from './components/ChatList.vue'
-import Dialogues from './components/Dialogues.vue'
+import UserInfo from './components/UserInfo.vue'
 </script>
 
 <template>
@@ -12,6 +11,9 @@ import Dialogues from './components/Dialogues.vue'
       <div class="header-links">
         <div><router-link to="/">Home</router-link></div>
         <div><router-link to="/dialogues">Dialogues</router-link></div>
+        <div>
+          <UserInfo />
+        </div>
       </div>
     </div>
     <div class="view-container">
@@ -29,14 +31,14 @@ import Dialogues from './components/Dialogues.vue'
   z-index: 999;
 }
 
-.view-container{
+.view-container {
   margin-top: calc(4.5rem);
 }
 
 .header-links {
   display: flex;
   justify-content: space-evenly;
-  min-width: 160px;
+  min-width: 300px;
 }
 
 .greetings h1 {

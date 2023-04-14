@@ -67,14 +67,14 @@ const Dialogues = database.define('dialogues', {
         unique: false,
         fields: ["createdAt"]
     }, {
-        name: "idx_user",
+        name: "idx_user_2",
         unique: false,
         fields: ["user"]
     }]
 });
 
 function sync_database(callback) {
-    database.sync({ force: false }).then(callback);
+    database.sync({ force: false, alter: true }).then(callback);
 }
 
 export { Chats, Dialogues, Users, sync_database }
