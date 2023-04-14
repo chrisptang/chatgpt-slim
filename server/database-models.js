@@ -23,18 +23,29 @@ const Chats = database.define('chat_records', {
         name: "idx_create_time",
         unique: false,
         fields: ["create_time"]
+    }, {
+        name: "idx_user",
+        unique: false,
+        fields: ["user"]
     }]
 });
 
 const Users = database.define('users', {
     email: Sequelize.STRING(255),
-    access_token: Sequelize.TEXT
+    name: Sequelize.STRING(255),
+    login: Sequelize.STRING(255),
+    access_token: Sequelize.TEXT,
+    api_response: Sequelize.TEXT
 }, {
     paranoid: true,
     indexes: [{
         name: "idx_email",
         unique: false,
         fields: ["email"]
+    }, {
+        name: "idx_login",
+        unique: false,
+        fields: ["login"]
     }]
 });
 
@@ -55,6 +66,10 @@ const Dialogues = database.define('dialogues', {
         name: "idx_created_at",
         unique: false,
         fields: ["createdAt"]
+    }, {
+        name: "idx_user",
+        unique: false,
+        fields: ["user"]
     }]
 });
 

@@ -4,18 +4,24 @@ import path from "path";
 import bodyParser from 'body-parser';
 import fetch from 'node-fetch';
 import { Chats, Dialogues, sync_database } from "./database-models.js"
+import { setupLoginWithGithub, AUTH_ALLOWED_PATHS } from "./user-operations.js"
 import { createServer } from 'http';
 import HttpsProxyAgent from "https-proxy-agent";
 
 let app = express();
-app.use(cors());
+const allowedDomains = ['http://localhost:5001', 'http://127.0.0.1:5001'];
+app.use(cors({
+    origin: allowedDomains,
+    credentials: true
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 const static_path = process.env.SERVER_STATIC_PATH || '../dist';
 app.use(express.static(static_path))
+setupLoginWithGithub(app)
 
-const DEFAUL_OPEN_AI_MODEL = "gpt-3.5-turbo-0301";
+const DEFAUL_OPENAI_MODEL = process.env.DEFAUL_OPENAI_MODEL || "gpt-3.5-turbo-0301";
 
 console.log("about to start new chatgpt server with key:", (process.env.OPENAI_API_KEY || "0000000000").substring(0, 10));
 
@@ -77,7 +83,7 @@ function randomSeqId() {
 }
 
 app.post('/api/newChat', async (req, res) => {
-    let model = req.body.model || DEFAUL_OPEN_AI_MODEL;
+    let model = req.body.model || DEFAUL_OPENAI_MODEL;
     let propmt = req.body.propmt;
     let refer_previous = req.body.refer_previous || false;
     let max_previous = req.body.max_previous || 5;
@@ -190,7 +196,7 @@ app.post('/api/chats/:id', async (req, res) => {
     }
     propmt = propmt || record.propmt;
 
-    let model = req.body.model || DEFAUL_OPEN_AI_MODEL;
+    let model = req.body.model || DEFAUL_OPENAI_MODEL;
     let data = {
         model: model,
         stream: true,
@@ -310,7 +316,7 @@ app.post('/api/dialogues', async (req, res) => {
         id = newDialogue.id;
     }
 
-    let model = req.body.model || DEFAUL_OPEN_AI_MODEL;
+    let model = req.body.model || DEFAUL_OPENAI_MODEL;
     let data = {
         model: model,
         messages
@@ -361,7 +367,7 @@ app.post('/api/chunked/dialogues', async (req, res) => {
         id = record.id;
     }
 
-    let model = req.body.model || DEFAUL_OPEN_AI_MODEL;
+    let model = req.body.model || DEFAUL_OPENAI_MODEL;
     let data = {
         model: model,
         messages
@@ -420,9 +426,9 @@ const port = parseInt(process.env.PORT || "8081")
 app.use((req, res) => {
     if (req.url.indexOf("/api/") > 0) {
         //send json for api calls
-        res.status(500).json({ error: true });
+        res.status(500).send(JSON.stringify({ error: true }));
         res.end();
-    } else {
+    } else if (!req.url.match(AUTH_ALLOWED_PATHS)) {
         // fullback to /home
         res.sendFile(path.join(static_path, 'index.html'));
     }
@@ -430,7 +436,9 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
     console.error("handle request failed:", req.url, err.message, err.stack);
-    res.status(500).send(JSON.stringify({ error: true, message: err.message }));
+    if (!res.headersSent) {
+        res.status(500).send(JSON.stringify({ error: true, message: err.message }));
+    }
 });
 
 sync_database(() => {

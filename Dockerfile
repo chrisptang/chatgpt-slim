@@ -18,6 +18,8 @@ ENV PG_HOST "db-postgres"
 ENV PG_USER "postgres"
 ENV PG_PASSWORD "postgres-local"
 ENV OPENAI_API_KEY "please_set_OPENAI_API_KEY_env"
+ENV GITHUB_CLIENT_ID "clientId"
+ENV GITHUB_CLIENT_SECRET "secret-of-the-clientId"
 
 
 EXPOSE ${PORT}

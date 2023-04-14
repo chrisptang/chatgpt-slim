@@ -2,7 +2,8 @@ import axios from 'axios';
 
 const client = axios.create({
     baseURL: process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8081/api',
-    json: true
+    json: true,
+    withCredentials: true
 })
 
 const decoder = new TextDecoder('utf-8');
@@ -18,6 +19,9 @@ export default {
             return req.data;
         }).catch(err => {
             console.error(err);
+            if (err.response && err.response.status === 401 && err.response.data) {
+                window.location.href = err.response.data.login;
+            }
         })
     },
     listChats(chat_count = 5) {
@@ -65,6 +69,7 @@ export default {
         let baseURL = process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8081/api'
         const response = await fetch(`${baseURL}/${path}`, {
             method: "post",
+            credentials: 'include',
             headers: {
                 "Content-Type": "application/json"
             },
