@@ -9,9 +9,9 @@ import { createServer } from 'http';
 import HttpsProxyAgent from "https-proxy-agent";
 
 let app = express();
-const allowedDomains = ['http://localhost:5001', 'http://127.0.0.1:5001'];
+const ALLOWED_DOMAINS = ['http://localhost:5001', 'http://127.0.0.1:5001'];
 app.use(cors({
-    origin: allowedDomains,
+    origin: ALLOWED_DOMAINS,
     credentials: true
 }));
 app.use(bodyParser.json());
@@ -187,7 +187,8 @@ app.delete('/api/chats/:id', async (req, res) => {
 const chunk_header = {
     'Content-Type': 'application/json',
     'Transfer-Encoding': 'chunked',
-    'Access-Control-Allow-Origin': '*'
+    'Access-Control-Allow-Origin': ALLOWED_DOMAINS[0],
+    'Access-Control-Allow-Credentials': true,
 };
 
 //complete this chat:
