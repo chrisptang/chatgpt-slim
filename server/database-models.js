@@ -15,13 +15,26 @@ const Chats = database.define('chat_records', {
     propmt: Sequelize.TEXT,
     response: Sequelize.TEXT,
     create_time: Sequelize.DATE,
-    type: Sequelize.STRING
+    type: Sequelize.STRING,
+    user: Sequelize.STRING(255)
 }, {
     paranoid: true,
     indexes: [{
         name: "idx_create_time",
         unique: false,
         fields: ["create_time"]
+    }]
+});
+
+const Users = database.define('users', {
+    email: Sequelize.STRING(255),
+    access_token: Sequelize.TEXT
+}, {
+    paranoid: true,
+    indexes: [{
+        name: "idx_email",
+        unique: false,
+        fields: ["email"]
     }]
 });
 
@@ -35,7 +48,7 @@ const Chats = database.define('chat_records', {
 const Dialogues = database.define('dialogues', {
     title: Sequelize.STRING(512),
     messages: Sequelize.TEXT,
-    user: Sequelize.STRING
+    user: Sequelize.STRING(255)
 }, {
     paranoid: true,
     indexes: [{
@@ -49,4 +62,4 @@ function sync_database(callback) {
     database.sync({ force: false }).then(callback);
 }
 
-export { Chats, Dialogues, sync_database }
+export { Chats, Dialogues, Users, sync_database }

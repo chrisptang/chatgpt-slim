@@ -11,6 +11,7 @@ export default {
             counting_timeout: null,
             // refer_previous: false,
             chats: [{
+                id: 0,
                 propmt: "you can type any text to start chat with ChatGPT-3.5",
                 choices: [{
                     "message": {
@@ -54,7 +55,11 @@ export default {
             }
             let newChat = await api.createChat(prompt);
             newChat = this.converResponseToChat(newChat);
-            this.chats = this.chats.concat(newChat);
+            if (!this.chats || (this.chats.length == 1 && this.chats[0].id <= 0)) {
+                this.chats = [newChat]
+            } else {
+                this.chats = this.chats.concat(newChat);
+            }
             this.prompt = "";
             await this.completeChatChunkedById(newChat.id, { prompt });
         },
@@ -130,7 +135,7 @@ export default {
     <div style="width: 90vw;">
         <div class="chat-list">
             <ul class="chat-list-ul">
-                <li v-for="chat in chats" :key="chat.prompt" class="single-chat">
+                <li v-for="chat in chats" :key="chat.id" class="single-chat">
                     <p class="chat-propmt"><span>{{ chat.propmt }}</span>
                         <i class="refresh-icon action-icon" @click="recompleteChat(chat.id)">
                             <img src="/refresh.png" />

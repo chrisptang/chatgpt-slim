@@ -210,7 +210,7 @@ app.post('/api/chats/:id', async (req, res) => {
     try {
         for await (let chunk of response.body) {
             chunk = chunk.toString()
-            if (chunk_index % 20) {
+            if (++chunk_index % 30 == 0) {
                 // print debugger info every 20 chunks.
                 console.log("chunk:", chunk_index, "\n", chunk);
             }
@@ -231,7 +231,6 @@ app.post('/api/chats/:id', async (req, res) => {
                     }
                 }
             }
-            chunk_index++;
         }
         let updateRecord = { response: JSON.stringify({ assistant_chunked_resposne }) };
         await Chats.update(updateRecord, { where: { id } });
@@ -380,7 +379,7 @@ app.post('/api/chunked/dialogues', async (req, res) => {
     try {
         for await (let chunk of response.body) {
             chunk = chunk.toString()
-            if (chunk_index % 20) {
+            if (++chunk_index % 30 == 0) {
                 // print debugger info every 20 chunks.
                 console.log("chunk:", chunk_index, "\n", chunk);
             }
@@ -402,7 +401,6 @@ app.post('/api/chunked/dialogues', async (req, res) => {
                     }
                 }
             }
-            chunk_index++;
         }
         let updateRecord = { messages: JSON.stringify(messages) };
         await Dialogues.update(updateRecord, { where: { id } });
@@ -428,6 +426,11 @@ app.use((req, res) => {
         // fullback to /home
         res.sendFile(path.join(static_path, 'index.html'));
     }
+});
+
+app.use((err, req, res, next) => {
+    console.error("handle request failed:", req.url, err.message, err.stack);
+    res.status(500).send(JSON.stringify({ error: true, message: err.message }));
 });
 
 sync_database(() => {
