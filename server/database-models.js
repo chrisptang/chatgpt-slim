@@ -16,7 +16,10 @@ const Chats = database.define('chat_records', {
     response: Sequelize.TEXT,
     create_time: Sequelize.DATE,
     type: Sequelize.STRING,
-    user: Sequelize.STRING(255)
+    user: {
+        type: Sequelize.STRING(255),
+        defaultValue: "default-user"
+    }
 }, {
     paranoid: true,
     indexes: [{
@@ -59,7 +62,10 @@ const Users = database.define('users', {
 const Dialogues = database.define('dialogues', {
     title: Sequelize.STRING(512),
     messages: Sequelize.TEXT,
-    user: Sequelize.STRING(255)
+    user: {
+        type: Sequelize.STRING(255),
+        defaultValue: "default-user"
+    }
 }, {
     paranoid: true,
     indexes: [{

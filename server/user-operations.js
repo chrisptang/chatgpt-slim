@@ -5,9 +5,12 @@ import HttpsProxyAgent from "https-proxy-agent";
 // Passport authentication setup
 // This assumes that you have already created a GitHub OAuth app and have the app ID and secret
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
+const NEED_AUTH = !!GITHUB_CLIENT_ID && `0${GITHUB_CLIENT_ID}`.length > 5;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 const PORT = process.env.PORT || "8081";
-const GITHUB_CALLBACK_URL = `http://localhost:${PORT}/auth/github/callback`;
+const GITHUB_LOGIN_CALLBACK_HOST = process.env.GITHUB_LOGIN_CALLBACK_HOST;
+let callback_host = GITHUB_LOGIN_CALLBACK_HOST || `localhost:${PORT}`
+const GITHUB_CALLBACK_URL = `http://${callback_host}/auth/github/callback`;
 
 
 console.log("GITHUB_CALLBACK_URL:", GITHUB_CALLBACK_URL);
@@ -16,9 +19,18 @@ const AUTH_ALLOWED_PATHS = /^(\/login\/)|(^\/auth\/)/g;
 const github_login = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(GITHUB_CALLBACK_URL)}`;
 
 function setupLoginWithGithub(app) {
+
+    console.log("\n\n:NEED_AUTH", NEED_AUTH);
+
     app.use(cookieParser());
 
     app.use(async (req, res, next) => {
+        if (!NEED_AUTH) {
+            console.warn("working in no-auth mode");
+            req.user = { login: "default-user" };
+            next();
+            return;
+        }
         try {
             if (!req.cookies.token) {
                 console.log("user not found on session:", req.url);

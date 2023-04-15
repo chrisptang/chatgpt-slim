@@ -138,10 +138,10 @@ export default {
                 <li v-for="chat in chats" :key="chat.id" class="single-chat">
                     <p class="chat-propmt"><span>{{ chat.propmt }}</span>
                         <i class="refresh-icon action-icon" @click="recompleteChat(chat.id)">
-                            <img src="/refresh.png" />
+                            <img title="Regenerate" alt="Regenerate" src="/refresh.png" />
                         </i>
                         <i class="delete-icon action-icon" @click="deleteChat(chat.id)">
-                            <img src="/delete.png" />
+                            <img title="Delete" alt="Delete" src="/delete.png" />
                         </i>
                     </p>
                     <p class="chat-response"
