@@ -50,29 +50,6 @@ export default {
                 window.clearInterval(this.counting_timeout);
             }
         },
-        async completeChat() {
-            this.loading = true;
-            this.warn_msg = "";
-            let prompt = this.prompt;
-            if (!prompt || prompt.length <= 5) {
-                this.warn_msg = "invalid prompt";
-                this.loading = false;
-                this.prompt = "";
-                return;
-            }
-            this.startCounting();
-            let data = { id: this.working_dialogue.id, messages: [{ role: "user", content: prompt }] };
-            if (this.working_dialogue_id == 0) {
-                this.working_dialogue.messages = [];
-            }
-            this.working_dialogue.messages = this.working_dialogue.messages.concat(data.messages[0]);
-            this.prompt = "";
-            let dialogue = await api.completeDialogue(data);
-            this.working_dialogue = dialogue;
-            this.working_dialogue_id = dialogue.id;
-            this.loading = false;
-            this.endCounting();
-        },
         async completeChunkedDialogue() {
             this.loading = true;
             this.warn_msg = "";
@@ -84,9 +61,15 @@ export default {
                 return;
             }
             this.startCounting();
-            let data = { id: this.working_dialogue.id, messages: [{ role: "user", content: prompt }] };
             if (this.working_dialogue_id == 0) {
-                this.working_dialogue.messages = [];
+                //create new one
+                let newDialogue = await api.createDialogue(prompt);
+                this.dialogues = this.dialogues.concat(newDialogue);
+            } else {
+                //append to exist one.
+                //todo:
+                let newDialogue = await api.updateDialogue({ prompt, id: this.working_dialogue_id });
+                this.dialogues = this.dialogues.concat(newDialogue);
             }
             this.working_dialogue.messages = this.working_dialogue.messages.concat(data.messages[0]);
             this.prompt = "";

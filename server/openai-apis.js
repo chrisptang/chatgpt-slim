@@ -297,60 +297,43 @@ app.post('/api/dialogues/:id', async (req, res) => {
         res.end();
         return;
     }
-    await Dialogues.update({ title: req.body.title }, { where: { id } });
-    record = await Chats.findOne({ where: { id } })
+    let { propmt, title } = { ...req.body };
+    let updateRecord = {};
+    if (!!title && title.length > 2) {
+        updateRecord.title = title;
+    }
+    if (!!propmt && propmt.length > 2) {
+        updateRecord.messages = JSON.stringify(JSON.parse(record.messages).concat({ role: "user", content: propmt }));
+    }
+
+    if (Object.keys(updateRecord) > 0) {
+        await Dialogues.update(updateRecord, { where: { id } });
+        record = await Chats.findOne({ where: { id } })
+    }
     res.json(record);
 });
 
-// create or append new user content to let server response.
+// create new user content to let server response.
 app.post('/api/dialogues', async (req, res) => {
     //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
     //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
-    let id = req.body.id || 0, messages = req.body.messages;
+    let propmt = { ...req.body };
     let user = req.user.login;
 
     console.log(req.body);
-    if (!messages || messages.length == 0) {
+    if (!propmt || propmt.length == 0) {
         res.status(400);
         res.write("invalid request body:" + JSON.stringify(req.body));
         res.end();
         return null;
     }
 
+    let messages = [{ role: 'user', content: propmt }];
+
     console.log("about to start new dialogue:", req.body);
+    let record = { user, title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
+    record = await Dialogues.create(record);
 
-    let record = await Dialogues.findOne({ where: { id, user } })
-
-    if (record && record.id > 0) {
-        messages = JSON.parse(record.messages).concat(messages[messages.length - 1]);
-    } else {
-        record = { user, title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
-        let newDialogue = await Dialogues.create(record);
-        id = newDialogue.id;
-    }
-
-    let model = req.body.model || DEFAUL_OPENAI_MODEL;
-    let data = {
-        model: model,
-        messages
-    }
-
-    const completion = await make_openai_request("chat/completions", data);
-    if (!completion || !completion.choices || completion.choices.length <= 0) {
-        console.warn("invalid response from openai:", completion, "\nrequest:", data);
-        res.status = 500;
-        res.end();
-        return;
-    }
-    let completionStr = JSON.stringify(completion, null, 4);
-    console.log(completionStr);
-    messages = messages.concat(completion.choices[0].message);
-
-    let updateRecord = { messages: JSON.stringify(messages) };
-    await Dialogues.update(updateRecord, { where: { id } });
-
-    record = await Dialogues.findOne({ where: { id } })
-    record.messages = JSON.parse(record.messages);
     res.json(record);
 });
 
@@ -359,28 +342,22 @@ app.post('/api/dialogues', async (req, res) => {
 app.post('/api/chunked/dialogues', async (req, res) => {
     //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
     //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
-    let id = req.body.id || 0, messages = req.body.messages, user = req.user.login;
+    let id = req.body.id || 0, user = req.user.login;
     console.log(req.body);
-    if (!messages || messages.length == 0) {
-        res.status(400);
+
+    console.log("about to complete dialogue:", id);
+
+    let record = await Dialogues.findOne({ where: { id, user } });
+
+    if (!record || !record.messages || record.messages.length < 10) {
+        res.status(404);
         res.write("invalid request body:" + JSON.stringify(req.body));
         res.end();
         return null;
     }
 
-    console.log("about to start new dialogue:", req.body);
-
-    let record = await Dialogues.findOne({ where: { id, user } });
-
-    if (record && record.id > 0) {
-        messages = JSON.parse(record.messages).concat(messages[messages.length - 1]);
-    } else {
-        record = { user, title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
-        record = await Dialogues.create(record);
-        id = record.id;
-    }
-
-    let model = req.body.model || DEFAUL_OPENAI_MODEL;
+    let model = req.body.model || DEFAUL_OPENAI_MODEL,
+        messages = JSON.parse(record.messages);
     let data = {
         model: model,
         messages

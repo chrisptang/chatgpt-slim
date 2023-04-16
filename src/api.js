@@ -56,11 +56,10 @@ export default {
     updateDialogue(dialogue) {
         return this.execute('post', `/dialogues/${dialogue.id}`, dialogue)
     },
-    completeDialogue(data, max_messages = 20) {
+    createDialogue(propmt) {
         //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
         //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
-        data.max_messages = max_messages;
-        return this.execute('post', '/dialogues', data);
+        return this.execute('post', '/dialogues', { propmt });
     },
     async completeChunkedDialogue(data, callback) {
         await this.chunkedApi("chunked/dialogues", data, callback);
