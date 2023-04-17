@@ -1,6 +1,8 @@
 <script setup>
 import UserInfo from './components/UserInfo.vue'
 import PopUpMessage from './components/PopUpMessage.vue';
+import routers from './router/router-config.js';
+
 </script>
 
 <template>
@@ -11,11 +13,13 @@ import PopUpMessage from './components/PopUpMessage.vue';
         <h1 class="green">{{ "Chat with OpenAI GPT-3.5" }}</h1>
       </div>
       <div class="header-links">
-        <div><router-link to="/">Home</router-link></div>
-        <div><router-link to="/dialogues">Dialogues</router-link></div>
-        <div>
-          <UserInfo />
+        <div class="route-item" v-for="route in routers">
+          <router-link :key="route.name" :to="route.path" exact-active-class="selected">{{ route.name }}
+          </router-link>
         </div>
+      </div>
+      <div class="user-info">
+        <UserInfo />
       </div>
     </div>
     <div class="view-container">
@@ -33,6 +37,17 @@ import PopUpMessage from './components/PopUpMessage.vue';
   z-index: 999;
 }
 
+.route-item .selected {
+  color: hsla(200, 100%, 50%, 1);
+  font-weight: bolder;
+}
+
+.user-info {
+  right: calc(var(--section-gap) / 4);
+  position: absolute;
+  bottom: calc(var(--section-gap) / 20);
+}
+
 .view-container {
   margin-top: calc(4.5rem);
 }
@@ -40,7 +55,7 @@ import PopUpMessage from './components/PopUpMessage.vue';
 .header-links {
   display: flex;
   justify-content: space-evenly;
-  min-width: 300px;
+  min-width: 200px;
 }
 
 .greetings h1 {

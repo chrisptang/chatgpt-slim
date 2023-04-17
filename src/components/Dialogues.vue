@@ -157,7 +157,8 @@ export default {
         <div class="dialogue-detail">
             <div class="chat-list">
                 <ul class="chat-list-ul">
-                    <li v-for="message in working_dialogue.messages" :key="message.content" class="single-chat">
+                    <li v-for="(message, index) in working_dialogue.messages" :key="message.content + index"
+                        class="single-chat">
                         <p :class="message.role == 'user' ? 'chat-propmt' : 'chat-response'"
                             v-html="message.role == 'user' ? message.content : window.markdownit().render(message.content)">
                         </p>

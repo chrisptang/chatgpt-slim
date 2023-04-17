@@ -9,24 +9,27 @@ services:
     environment:
       - OPENAI_API_KEY=$OPENAI_API_KEY
       - HTTP_PROXY=$HTTP_PROXY
+      - GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID
+      - GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET
+      - GITHUB_LOGIN_CALLBACK_HOST=$GITHUB_LOGIN_CALLBACK_HOST
     depends_on:
       - db-postgres
 
   db-postgres:
     container_name: db-postgres
     image: postgres:10
-    ports: 
+    ports:
       - "5432:5432"
-    volumes: 
+    volumes:
       - ./pg-data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: postgres-local
       POSTGRES_DB: chatgpt
-      
+
   adminer:
     image: adminer:latest
     container_name: adminer_chatgpt
-    depends_on: 
+    depends_on:
       - db-postgres
     ports:
       - 4088:8080

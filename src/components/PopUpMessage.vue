@@ -16,14 +16,14 @@ export default {
             message: 'just for demo'
         })
 
-        const showMessage = (message) => {
+        const showMessage = (message, seconds = 3) => {
             console.log("showing message:", message, this)
             state.message = message
             state.show = true
             setTimeout(() => {
                 state.show = false;
                 state.message = "";
-            }, 3000)
+            }, 1000 * seconds)
             console.log(state);
         }
 

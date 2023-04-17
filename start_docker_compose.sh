@@ -1,7 +1,25 @@
 #!/bin/bash
 
+env=$(cat .env)
+if [ ${#env} -gt 15 ]; then
+    printf "existing env:\n"
+    cat .env
+    read -p "type enter to use exists config or n to start new:" use_exists
+    if [ ${#use_exists} -lt 1 ]; then
+        docker-compose up -d
+        exit 0
+    fi
+fi
+
 export HOST_NAME=$(ifconfig | grep 192. | awk '{print $2}')
 echo "HOST_NAME:$HOST_NAME"
+
+read -p "specify your proxy port, default to be 8001:" proxy_port
+if [ ${#proxy_port} -gt 3 ]; then
+    export HTTP_PROXY="http://${HOST_NAME}:${proxy_port}"
+else
+    export HTTP_PROXY="http://${HOST_NAME}:8001"
+fi
 
 export HTTP_PROXY="http://${HOST_NAME}:8001"
 
@@ -27,5 +45,15 @@ if [ ${#client_id} -gt 5 ]; then
 else
     echo "you choose to use this tool in no-auth mode."
 fi
+
+cat /dev/null >.env2
+echo "OPENAI_API_KEY=$OPENAI_API_KEY" >>.env
+echo "HTTP_PROXY=$HTTP_PROXY" >>.env
+echo "GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID" >>.env
+echo "GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET" >>.env
+echo "GITHUB_LOGIN_CALLBACK_HOST=$GITHUB_LOGIN_CALLBACK_HOST" >>.env
+
+printf "starting services with config:"
+cat .env2
 
 docker-compose up -d

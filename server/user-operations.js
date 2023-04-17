@@ -1,6 +1,7 @@
 import { Users } from "./database-models.js"
 import cookieParser from "cookie-parser";
 import HttpsProxyAgent from "https-proxy-agent";
+import fetch from 'node-fetch';
 
 // Passport authentication setup
 // This assumes that you have already created a GitHub OAuth app and have the app ID and secret

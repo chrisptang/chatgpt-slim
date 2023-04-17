@@ -20,8 +20,10 @@ export default {
         }).catch(err => {
             console.error(err);
             if (err.response && err.response.status === 401 && err.response.data) {
-                window.showMessage("Login you in with github...");
-                window.location.href = err.response.data.login;
+                window.showMessage("Log you in with github...");
+                setTimeout(() => {
+                    window.location.href = err.response.data.login;
+                }, 3500);
                 return {};
             }
             window.showMessage("server error:" + err.message);
@@ -101,7 +103,7 @@ export default {
                     });
 
                     for (let data of datas) {
-                        if (++chunk_index % 20 == 0) {
+                        if (++chunk_index % 50 == 0) {
                             console.log("new arriving data:", chunk_index, data);
                         }
                         await callback(data);
