@@ -140,7 +140,7 @@ function setupLoginWithGithub(app) {
             } else {
                 await Users.update({ name, access_token, api_response: JSON.stringify(api_response) }, { where: { login } });
             }
-            res.cookie("token", access_token, { httpOnly: true, maxAge: 3600000 });
+            res.cookie("token", access_token, { httpOnly: true, maxAge: 1000 * 3600 * 24 * 30 });
             res.redirect("/");
         } catch (err) {
             console.error(err.message, err.stack);
