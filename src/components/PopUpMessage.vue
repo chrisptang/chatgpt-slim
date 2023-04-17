@@ -1,6 +1,6 @@
 <template>
-    <div v-if="show" class="popup-message">
-        <h2>{{ message }}</h2>
+    <div v-if="state.show" class="popup-message">
+        <h3>{{ state.message }}</h3>
         <i><img src="" /></i>
     </div>
 </template>
@@ -9,27 +9,29 @@
 import { reactive } from 'vue'
 
 export default {
+    name: "popUpMessage",
     setup() {
         const state = reactive({
             show: false,
-            message: ''
+            message: 'just for demo'
         })
 
         const showMessage = (message) => {
-            console.log("showing message:", message)
+            console.log("showing message:", message, this)
             state.message = message
             state.show = true
             setTimeout(() => {
-                state.show = false
-            }, 5000)
+                state.show = false;
+                state.message = "";
+            }, 3000)
+            console.log(state);
         }
 
         // expose showMessage function globally
-        window.showMessage = showMessage
+        window.showMessage = showMessage.bind(this)
 
         return {
-            show: state.show,
-            message: state.message
+            state
         }
     }
 }
@@ -38,12 +40,16 @@ export default {
 <style scoped>
 .popup-message {
     position: fixed;
-    top: 20px;
+    top: 5%;
     left: 50%;
     transform: translateX(-50%);
     background-color: #fff;
-    padding: 10px;
+    padding: 10px 30px;
     border-radius: 5px;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    box-shadow: 5px 5px 10px hsla(160, 100%, 30%, 0.4);
+    z-index: 1000;
+    display: flex;
+    max-width: 400px;
+    word-wrap: break-word;
 }
 </style>

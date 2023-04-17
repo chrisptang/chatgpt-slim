@@ -4,6 +4,7 @@ import PopUpMessage from './components/PopUpMessage.vue';
 </script>
 
 <template>
+  <PopUpMessage />
   <div>
     <div class="header sticky-header">
       <div class="greetings">
@@ -20,7 +21,6 @@ import PopUpMessage from './components/PopUpMessage.vue';
     <div class="view-container">
       <router-view></router-view>
     </div>
-    <PopUpMessage />
   </div>
 </template>
 
