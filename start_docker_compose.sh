@@ -17,8 +17,13 @@ if [ ${#client_id} -gt 5 ]; then
     export GITHUB_CLIENT_ID="${client_id}"
     read -p "specify github app client secret then:" client_secret
     export GITHUB_CLIENT_SECRET="${client_secret}"
-    read -p "specify github login callback host, e.g:   localhost:9000" callback
-    export GITHUB_LOGIN_CALLBACK_HOST="${callback}"
+    read -p "specify github login callback host, default to be:localhost:9000, type enter to use default value callback host" callback
+    if [ ${#callback} -gt 5 ]; then
+        export GITHUB_LOGIN_CALLBACK_HOST="${callback}"
+    else
+        export GITHUB_LOGIN_CALLBACK_HOST="localhost:9000"
+    fi
+    echo "GITHUB_LOGIN_CALLBACK_HOST:${GITHUB_LOGIN_CALLBACK_HOST}"
 else
     echo "you choose to use this tool in no-auth mode."
 fi
