@@ -20,8 +20,12 @@ export default {
         }).catch(err => {
             console.error(err);
             if (err.response && err.response.status === 401 && err.response.data) {
+                window.showMessage("Login you in with github...");
                 window.location.href = err.response.data.login;
+                return {};
             }
+            window.showMessage("server error:" + err.message);
+            return {};
         })
     },
     listUserInfo() {

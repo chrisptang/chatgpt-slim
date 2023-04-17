@@ -64,21 +64,27 @@ export default {
             if (this.working_dialogue_id == 0) {
                 //create new one
                 let newDialogue = await api.createDialogue(prompt);
-                this.dialogues = this.dialogues.concat(newDialogue);
+                this.dialogues = [newDialogue].concat(this.dialogues);
+                this.switchDialogue(newDialogue.id);
             } else {
                 //append to exist one.
                 //todo:
                 let newDialogue = await api.updateDialogue({ prompt, id: this.working_dialogue_id });
-                this.dialogues = this.dialogues.concat(newDialogue);
+                this.working_dialogue = newDialogue;
             }
-            this.working_dialogue.messages = this.working_dialogue.messages.concat(data.messages[0]);
             this.prompt = "";
-            await api.completeChunkedDialogue(data, async function (dialogue) {
+            await api.completeChunkedDialogue({ id: this.working_dialogue_id }, async function (dialogue) {
                 if (!dialogue || dialogue.id <= 0) {
                     console.log("finished:", dialogue);
                     return;
                 }
                 this.working_dialogue = dialogue;
+                for (let index in this.dialogues) {
+                    if (this.dialogues[index].id == dialogue.id) {
+                        this.dialogues[index] = dialogue;
+                        break;
+                    }
+                }
                 this.working_dialogue_id = dialogue.id;
             }.bind(this));
             this.loading = false;

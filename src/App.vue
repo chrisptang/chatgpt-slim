@@ -1,5 +1,6 @@
 <script setup>
 import UserInfo from './components/UserInfo.vue'
+import PopUpMessage from './components/PopUpMessage.vue';
 </script>
 
 <template>
@@ -19,6 +20,7 @@ import UserInfo from './components/UserInfo.vue'
     <div class="view-container">
       <router-view></router-view>
     </div>
+    <PopUpMessage />
   </div>
 </template>
 

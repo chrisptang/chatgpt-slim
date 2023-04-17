@@ -194,7 +194,7 @@ const chunk_header = {
 //complete this chat:
 app.post('/api/chats/:id', async (req, res) => {
     let id = req.params.id, user = req.user.login;
-    let propmt = req.body.propmt;
+    let propmt = req.body.propmt;//
     let record = await Chats.findOne({ where: { id, user } })
     if (!record) {
         res.status(404);
@@ -297,16 +297,19 @@ app.post('/api/dialogues/:id', async (req, res) => {
         res.end();
         return;
     }
-    let { propmt, title } = { ...req.body };
+    let { prompt, title } = { ...req.body };
+    console.log("updating dialogue:", prompt, title);
     let updateRecord = {};
-    if (!!title && title.length > 2) {
+    if (title && title.length > 2) {
         updateRecord.title = title;
     }
-    if (!!propmt && propmt.length > 2) {
-        updateRecord.messages = JSON.stringify(JSON.parse(record.messages).concat({ role: "user", content: propmt }));
+    if (prompt && prompt.length > 2) {
+        //{"prompt":"what time did it reach a population of 10000000?","id":24}
+        updateRecord.messages = JSON.stringify(JSON.parse(record.messages).concat({ role: "user", content: prompt }));
     }
 
-    if (Object.keys(updateRecord) > 0) {
+    console.log("updateRecord", updateRecord);
+    if (Object.keys(updateRecord).length > 0) {
         await Dialogues.update(updateRecord, { where: { id } });
         record = await Chats.findOne({ where: { id } })
     }
@@ -315,10 +318,7 @@ app.post('/api/dialogues/:id', async (req, res) => {
 
 // create new user content to let server response.
 app.post('/api/dialogues', async (req, res) => {
-    //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
-    //for new dialogue: {messages:[{role:'user', content:'how are you'}]}
-    let propmt = { ...req.body };
-    let user = req.user.login;
+    let propmt = req.body.propmt, user = req.user.login;
 
     console.log(req.body);
     if (!propmt || propmt.length == 0) {
@@ -330,9 +330,10 @@ app.post('/api/dialogues', async (req, res) => {
 
     let messages = [{ role: 'user', content: propmt }];
 
-    console.log("about to start new dialogue:", req.body);
+    console.log("about to start new dialogue:", messages);
     let record = { user, title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
     record = await Dialogues.create(record);
+    console.log("new dialogue:", record);
 
     res.json(record);
 });
