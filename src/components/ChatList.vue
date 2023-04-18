@@ -305,15 +305,19 @@ p.chat-propmt {
         background: #444;
     }
 
-    .single-chat:hover .action-icon {
+    .action-icon-group{
         background-color: #fff;
     }
 
-    .action-icon:hover {
+    .single-chat:hover .action-icon {
+        background-color: #f8f8f8;
+    }
+
+    .single-chat:hover .action-icon:hover {
         background-color: #cdcdcd;
     }
 
-    .action-icon:active {
+    .single-chat:hover .action-icon:active {
         background-color: #aaa;
     }
 
