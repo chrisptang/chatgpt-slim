@@ -1,10 +1,12 @@
 #!/bin/bash
 
-export HOST_NAME=`hostname | awk '{print $1}'`
+export HOST_NAME=`ifconfig | grep 192. | awk '{print $2}'`
 echo "HOST_NAME:$HOST_NAME"
 
 export HTTP_PROXY="http://${HOST_NAME}:8001"
 export PG_HOST="${HOST_NAME}"
+
+export $(cat ../.env | xargs)
 
 if [ -z "$OPENAI_API_KEY" ]
 then

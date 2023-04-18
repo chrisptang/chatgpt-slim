@@ -1,7 +1,7 @@
 <template>
     <div>
         <a :href="user.html_url" target="_blank">
-            <!-- <img style="width: 20px;object-fit: contain;" :src="user.avatar_url" :alt="user.name" /> -->
+            <img style="width: 32px;object-fit: contain;margin-right: 10px;display: inline-block;" :src="user.avatar_url_local" />
             <span>Hello, {{ user.login }}</span>
         </a>
     </div>

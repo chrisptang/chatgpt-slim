@@ -321,11 +321,14 @@ p.chat-propmt {
 
     .dialogue-list {
         width: 300px;
+        height: 90vh;
+        overflow-y: auto;
     }
 
     .dialogue-detail {
         width: calc(100% - 360px);
-        min-height: 98vh;
+        height: 90vh;
+        overflow-y: auto;
     }
 
     .dialogue-container {

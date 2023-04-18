@@ -2,6 +2,9 @@ import { Users } from "./database-models.js"
 import cookieParser from "cookie-parser";
 import HttpsProxyAgent from "https-proxy-agent";
 import fetch from 'node-fetch';
+import sharp from 'sharp';
+import fs from 'fs';
+import path from "path";
 
 // Passport authentication setup
 // This assumes that you have already created a GitHub OAuth app and have the app ID and secret
@@ -12,12 +15,55 @@ const PORT = process.env.PORT || "8081";
 const GITHUB_LOGIN_CALLBACK_HOST = process.env.GITHUB_LOGIN_CALLBACK_HOST;
 let callback_host = GITHUB_LOGIN_CALLBACK_HOST || `localhost:${PORT}`
 const GITHUB_CALLBACK_URL = `http://${callback_host}/auth/github/callback`;
+const AVATAR_ROOT = path.join(process.env.SERVER_STATIC_PATH, "avatar");
+
+try { // Create directory if necessary 
+    if (!fs.existsSync(AVATAR_ROOT)) {
+        fs.mkdirSync(AVATAR_ROOT);
+    }
+} catch (err) {
+    console.error("unable to create avatar directory:", AVATAR_ROOT, err.stack)
+}
+
+async function downloadAndResizeAvatar(avatar_url, login) {
+    // Fetch the image data
+    const response = await fetchGithubApi(avatar_url, null, "get");
+    const buffer = Buffer.from(await response.arrayBuffer());
+    let raw_avatar = path.join(AVATAR_ROOT, `avatar_${login}.png`);
+    fs.writeFileSync(raw_avatar, buffer);
+
+    // Resize the image to 128x128
+    const resizedBuffer = await sharp(buffer).resize(128, 128).toBuffer();
+
+    let resized_avatar = path.join(AVATAR_ROOT, `avatar_${login}_128x128.png`);
+    // Save the image to the local disk
+    fs.writeFileSync(resized_avatar, resizedBuffer);
+}
+
 
 
 console.log("GITHUB_CALLBACK_URL:", GITHUB_CALLBACK_URL);
 
 const AUTH_ALLOWED_PATHS = /^(\/login\/)|(^\/auth\/)/g;
 const github_login = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(GITHUB_CALLBACK_URL)}`;
+
+// returns only the response
+async function fetchGithubApi(url, access_token = "", method = "get") {
+    let conf = { method }
+    let headers = {
+        "Accept": "application/json",
+        "X-GitHub-Api-Version": "2022-11-28"
+    };
+    if (access_token && access_token.length > 10) {
+        headers["Authorization"] = `Bearer ${access_token}`;
+    }
+    if (process.env.HTTP_PROXY && process.env.HTTP_PROXY.length > 10) {
+        conf.agent = new HttpsProxyAgent(process.env.HTTP_PROXY);
+        console.log("using proxy:", conf.agent);
+    }
+
+    return await fetch(url, conf);
+}
 
 function setupLoginWithGithub(app) {
 
@@ -61,6 +107,12 @@ function setupLoginWithGithub(app) {
         }
     });
 
+    app.get("/avatar/:avatar", async (req, res) => {
+        let avatar_path = req.params.avatar;
+        console.log("serving avatar:", avatar_path);
+        res.sendFile(path.join(AVATAR_ROOT, avatar_path));
+    });
+
     app.get("/api/me", async (req, res) => {
         let access_token = req.cookies.token, user = req.user;
         if (!user) {
@@ -73,9 +125,26 @@ function setupLoginWithGithub(app) {
             }
             user = JSON.parse(user.api_response);
         }
+        user.avatar_url_local = `/avatar/avatar_${user.login}_128x128.png`;
         res.json(user);
     });
 
+    //update avatar manually
+    app.post("/api/me/avatar", async (req, res) => {
+        let access_token = req.cookies.token, user = req.user;
+        if (!user) {
+            user = await Users.findOne({ where: { access_token } });
+            if (!user) {
+                if (!res.headersSent) {
+                    res.status(401).send(JSON.stringify({ login: github_login }));
+                    return;
+                }
+            }
+            user = JSON.parse(user.api_response);
+        }
+        await downloadAndResizeAvatar(user.avatar_url, user.login);
+        res.json(user);
+    });
 
     app.get('/auth/github/callback', async (req, res) => {
         try {
@@ -85,16 +154,9 @@ function setupLoginWithGithub(app) {
                 res.end();
                 return;
             }
-            let headers = {
-                "Accept": "application/json",
-            };
-            const postJson = { headers, method: "post" };
-            if (process.env.HTTP_PROXY) {
-                postJson.agent = new HttpsProxyAgent(process.env.HTTP_PROXY);
-                console.log("using proxy:", postJson.agent);
-            }
+
             let url = `https://github.com/login/oauth/access_token?client_id=${GITHUB_CLIENT_ID}&client_secret=${GITHUB_CLIENT_SECRET}&code=${code}`;
-            let resposne = await fetch(url, postJson);
+            let resposne = await fetchGithubApi(url, null, 'post');
             let api_response = await resposne.text()
             console.error("exchange for token http code:", resposne.status, api_response);
             if (resposne.status != 200) {
@@ -105,20 +167,7 @@ function setupLoginWithGithub(app) {
             let { access_token, scope, token_type } = { ...JSON.parse(api_response) };
             console.log("access_token acquired:", access_token.substring(0, 10));
 
-
-            // https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-the-authenticated-user
-            // curl -L \
-            //   -H "Accept: application/vnd.github+json" \
-            //   -H "Authorization: Bearer <YOUR-TOKEN>"\
-            //   -H "X-GitHub-Api-Version: 2022-11-28" \
-            //   https://api.github.com/user
-            headers = {
-                "Accept": "application/json",
-                "Authorization": `Bearer ${access_token}`,
-                "X-GitHub-Api-Version": "2022-11-28"
-            };
-
-            resposne = await fetch("https://api.github.com/user", { method: "get", headers });
+            resposne = await fetch("https://api.github.com/user", access_token, 'get');
 
             api_response = await resposne.text()
             console.error("http code:", resposne.status, api_response);
@@ -128,7 +177,7 @@ function setupLoginWithGithub(app) {
                 return;
             }
 
-            let { name, email, login } = { ...JSON.parse(api_response) };
+            let { name, email, login, avatar_url } = { ...JSON.parse(api_response) };
 
             let user = await Users.findOne({ where: { login } });
             if (!user) {
@@ -141,6 +190,10 @@ function setupLoginWithGithub(app) {
                 await Users.update({ name, access_token, api_response: JSON.stringify(api_response) }, { where: { login } });
             }
             res.cookie("token", access_token, { httpOnly: true, maxAge: 1000 * 3600 * 24 * 30 });
+
+            //resize avatar:
+            await downloadAndResizeAvatar(avatar_url, login);
+
             res.redirect("/");
         } catch (err) {
             console.error(err.message, err.stack);

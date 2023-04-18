@@ -8,6 +8,8 @@ import { setupLoginWithGithub, AUTH_ALLOWED_PATHS } from "./user-operations.js"
 import { createServer } from 'http';
 import HttpsProxyAgent from "https-proxy-agent";
 
+console.log("starting with env:", process.env)
+
 let app = express();
 const ALLOWED_DOMAINS = ['http://localhost:5001', 'http://127.0.0.1:5001'];
 app.use(cors({
@@ -417,7 +419,9 @@ const port = parseInt(process.env.PORT || "8081")
 app.use((req, res) => {
     if (req.url.indexOf("/api/") > 0) {
         //send json for api calls
-        res.status(500).send(JSON.stringify({ error: true }));
+        if (!res.headersSent) {
+            res.status(500).send(JSON.stringify({ error: true }));
+        }
         res.end();
     } else if (!req.url.match(AUTH_ALLOWED_PATHS)) {
         // fullback to /home
