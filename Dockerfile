@@ -1,6 +1,6 @@
 FROM node:17-alpine3.12
 
-ADD server/node_modules /app/server/node_modules
+# ADD server/node_modules /app/server/node_modules
 ADD server/package.json /app/server/package.json
 ADD server/package-lock.json /app/server/package-lock.json
 ADD server/database-models.js /app/server/database-models.js
@@ -8,7 +8,11 @@ ADD server/user-operations.js /app/server/user-operations.js
 ADD server/openai-apis.js /app/server/server.js
 
 WORKDIR /app/server
-RUN npm install
+RUN apk add --no-cache make gcc g++ python3 && \
+    apk del make gcc g++ python3 && \
+    npm config set registry https://registry.npmmirror.com/ && \
+    npm install --save-exact --production sharp && \
+    npm install
 
 ADD dist /app/frontend/
 

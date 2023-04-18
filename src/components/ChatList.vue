@@ -136,13 +136,16 @@ export default {
         <div class="chat-list">
             <ul class="chat-list-ul">
                 <li v-for="chat in chats" :key="chat.id" class="single-chat">
-                    <p class="chat-propmt"><span>{{ chat.propmt }}</span>
+                    <p class="chat-propmt">
+                        <span>{{ chat.propmt }}</span>
+                    <div class="action-icon-group">
                         <i class="refresh-icon action-icon" @click="recompleteChat(chat.id)">
                             <img title="Regenerate" alt="Regenerate" src="/refresh.png" />
                         </i>
                         <i class="delete-icon action-icon" @click="deleteChat(chat.id)">
                             <img title="Delete" alt="Delete" src="/delete.png" />
                         </i>
+                    </div>
                     </p>
                     <p class="chat-response"
                         v-html="window.markdownit().render(chat.assistant_chunked_resposne || chat.choices[0].message.content)">
@@ -174,14 +177,17 @@ export default {
     visibility: hidden !important;
 }
 
-.action-icon.refresh-icon {
-    margin-left: 3rem;
+.action-icon-group {
+    display: inline-block;
+    position: absolute;
+    right: calc(var(--section-gap) / 20);
+    background-color: hsla(200, 100%, 95%, 0.5);
+    border-radius: 2px;
 }
 
 .action-icon {
     display: none;
-    margin-left: 1rem;
-    align-items: right;
+    margin: 0 0.2vw;
     cursor: pointer;
     border-radius: 2px;
     padding: 0px 5px;
@@ -252,7 +258,7 @@ p.chat-propmt {
     background-color: hsla(200, 100%, 90%, 1);
     box-shadow: hsla(200, 100%, 90%, 1) 0 5px 20px;
     margin-bottom: 10px;
-    padding: 5px 10px 5px 10px;
+    padding: 5px 80px 5px 10px;
     margin-right: 20px;
 }
 

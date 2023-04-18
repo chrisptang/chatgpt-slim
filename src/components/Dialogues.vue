@@ -274,6 +274,8 @@ p.chat-propmt {
 
 .dialogue-title:hover p.chat-propmt i.delete-icon {
     display: inline;
+    position: absolute;
+    right: calc(var(--section-gap) / 20);
 }
 
 .greetings h1 {
