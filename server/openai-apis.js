@@ -293,7 +293,7 @@ app.delete('/api/dialogues/:id', async (req, res) => {
 app.post('/api/dialogues/:id', async (req, res) => {
     let id = req.params.id
     let user = req.user.login;
-    let record = await Dialogues.findOne({ where: { id, user } })
+    let record = await Dialogues.findOne({ where: { id, user } });
     if (!record) {
         res.status = 404;
         res.end();
@@ -313,7 +313,7 @@ app.post('/api/dialogues/:id', async (req, res) => {
     console.log("updateRecord", updateRecord);
     if (Object.keys(updateRecord).length > 0) {
         await Dialogues.update(updateRecord, { where: { id } });
-        record = await Chats.findOne({ where: { id } })
+        record = await Dialogues.findOne({ where: { id } })
     }
     res.json(record);
 });

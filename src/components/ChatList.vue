@@ -40,6 +40,7 @@ export default {
         },
         async endCounting() {
             if (this.counting_timeout > 0) {
+                this.counting_num = 0;
                 window.clearInterval(this.counting_timeout);
             }
             this.loading = false;
@@ -49,7 +50,6 @@ export default {
             let prompt = this.prompt;
             if (!prompt || prompt.length <= 5) {
                 this.warn_msg = "invalid prompt";
-                this.loading = false;
                 this.prompt = "";
                 return;
             }
@@ -86,32 +86,27 @@ export default {
             await this.completeChatChunkedById(id);
         },
         async completeChat() {
-            this.loading = true;
             this.warn_msg = "";
             let prompt = this.prompt;
             if (!prompt || prompt.length <= 5) {
                 this.warn_msg = "invalid prompt";
-                this.loading = false;
                 this.prompt = "";
                 return;
             }
             this.startCounting();
             let newChat = await api.newChat(prompt);
             this.chats = this.chats.concat(newChat);
-            this.loading = false;
             this.prompt = "";
             this.endCounting();
         },
         async listChats() {
-            this.loading = true;
-            let counts = this.$route.query.count || this.chat_count || 10;
             this.startCounting();
+            let counts = this.$route.query.count || this.chat_count || 10;
             let chatRecords = await api.listChats(counts);
-            this.endCounting();
             if (chatRecords && chatRecords.length > 0) {
                 this.chats = chatRecords.map(this.converResponseToChat);
             }
-            this.loading = false;
+            this.endCounting();
         },
         converResponseToChat(record) {
             let { id, propmt, response } = { ...record };
@@ -305,7 +300,7 @@ p.chat-propmt {
         background: #444;
     }
 
-    .action-icon-group{
+    .action-icon-group {
         background-color: #fff;
     }
 

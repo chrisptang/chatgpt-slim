@@ -43,20 +43,21 @@ export default {
             return window.screen.width <= 1024;
         },
         async startCounting() {
+            this.loading = true;
             this.counting_timeout = setInterval(function () { this.counting_num++; }.bind(this), 1000);
         },
         async endCounting() {
             if (this.counting_timeout > 0) {
+                this.counting_num = 0;
                 window.clearInterval(this.counting_timeout);
             }
+            this.loading = false;
         },
         async completeChunkedDialogue() {
-            this.loading = true;
             this.warn_msg = "";
             let prompt = this.prompt;
             if (!prompt || prompt.length <= 5) {
                 this.warn_msg = "invalid prompt";
-                this.loading = false;
                 this.prompt = "";
                 return;
             }
@@ -64,13 +65,18 @@ export default {
             if (this.working_dialogue_id == 0) {
                 //create new one
                 let newDialogue = await api.createDialogue(prompt);
-                this.dialogues = [newDialogue].concat(this.dialogues);
+                this.dialogues = [newDialogue, ...this.dialogues];
                 this.switchDialogue(newDialogue.id);
             } else {
                 //append to exist one.
                 //todo:
                 let newDialogue = await api.updateDialogue({ prompt, id: this.working_dialogue_id });
-                this.working_dialogue = newDialogue;
+                if (newDialogue.messages && newDialogue.messages.length > 0) {
+                    this.working_dialogue.messages[this.working_dialogue.messages.length] = newDialogue.messages[newDialogue.messages.length - 1];
+                } else {
+                    window.showMessage("unable to append to existing dialogue:" + this.working_dialogue_id);
+                }
+
             }
             this.prompt = "";
             await api.completeChunkedDialogue({ id: this.working_dialogue_id }, async function (dialogue) {
@@ -87,7 +93,6 @@ export default {
                 }
                 this.working_dialogue_id = dialogue.id;
             }.bind(this));
-            this.loading = false;
             this.endCounting();
         },
         async switchDialogue(id) {
@@ -100,8 +105,6 @@ export default {
             console.log("switched to:", id, this.working_dialogue);
         },
         async listDialogues() {
-            this.loading = true;
-            // let size = useRoute().query.size || this.size || 10;
             this.startCounting();
             let records = await api.listDialogues(20);
             this.endCounting();
@@ -114,7 +117,6 @@ export default {
                     this.switchDialogue(this.working_dialogue.id);
                 }
             }
-            this.loading = false;
         },
         enterEditMode(id) {
             this.editMode[id] = true;
