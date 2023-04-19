@@ -143,7 +143,7 @@ export default {
                     </div>
                     </p>
                     <p class="chat-response"
-                        v-html="window.markdownit().render(chat.assistant_chunked_resposne || chat.choices[0].message.content)">
+                        v-html="window._renderMD(chat.assistant_chunked_resposne || chat.choices[0].message.content)">
                     </p>
                 </li>
             </ul>

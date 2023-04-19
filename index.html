@@ -18,6 +18,12 @@
   <script type="module" src="/src/main.js"></script>
   <script>
     window._md = window.markdownit();
+    window._renderMD = (content) => {
+      if (!content || content.length <= 0) {
+        content = '<waiting>';
+      }
+      return _md.render(content);
+    }
   </script>
 </body>
 
