@@ -1,6 +1,5 @@
 <script>
 import api from "@/api";
-import { useRoute } from "vue-router";
 
 const new_dialogue_obj = JSON.stringify({
     title: "Dialogue with ChatGPT-3.5",
@@ -64,13 +63,13 @@ export default {
             this.startCounting();
             if (this.working_dialogue_id == 0) {
                 //create new one
-                let newDialogue = await api.createDialogue(prompt);
+                let newDialogue = this.converDialogue(await api.createDialogue(prompt));
                 this.dialogues = [newDialogue, ...this.dialogues];
                 this.switchDialogue(newDialogue.id);
             } else {
                 //append to exist one.
                 //todo:
-                let newDialogue = await api.updateDialogue({ prompt, id: this.working_dialogue_id });
+                let newDialogue = this.converDialogue(await api.updateDialogue({ prompt, id: this.working_dialogue_id }));
                 if (newDialogue.messages && newDialogue.messages.length > 0) {
                     this.working_dialogue.messages[this.working_dialogue.messages.length] = newDialogue.messages[newDialogue.messages.length - 1];
                 } else {
@@ -109,10 +108,7 @@ export default {
             let records = await api.listDialogues(20);
             this.endCounting();
             if (records && records.length > 0) {
-                this.dialogues = records.map(record => {
-                    record.messages = JSON.parse(record.messages);
-                    return record;
-                });
+                this.dialogues = records.map(this.converDialogue);
                 if (this.working_dialogue_id <= 0) {
                     this.switchDialogue(this.working_dialogue.id);
                 }
@@ -131,6 +127,16 @@ export default {
             await api.deleteDialogue(id);
             await this.listDialogues();
             await this.switchDialogue(0);
+        },
+        converDialogue(record) {
+            if (!record) {
+                return record;
+            }
+            if (typeof record.messages === 'string') {
+                record.messages = JSON.parse(record.messages);
+            }
+            console.log("record.messages:", typeof record.messages);
+            return record;
         }
     },
 };
