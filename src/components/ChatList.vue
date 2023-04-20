@@ -172,43 +172,6 @@ export default {
     visibility: hidden !important;
 }
 
-.action-icon-group {
-    display: inline-block;
-    position: absolute;
-    right: calc(var(--section-gap) / 20);
-    background-color: hsla(200, 100%, 95%, 0.5);
-    border-radius: 2px;
-}
-
-.action-icon {
-    display: none;
-    margin: 0 0.2vw;
-    cursor: pointer;
-    border-radius: 2px;
-    padding: 0px 5px;
-}
-
-.single-chat:hover .action-icon {
-    display: inline-block;
-}
-
-.action-icon:hover {
-    background-color: hsla(200, 100%, 70%, 1);
-}
-
-.action-icon:active {
-    background-color: hsla(200, 100%, 90%, 1);
-}
-
-.action-icon img {
-    width: 16px;
-    object-fit: contain;
-}
-
-.action-icon.refresh-icon img {
-    width: 14px;
-}
-
 h1 {
     font-weight: 500;
     font-size: 2.6rem;

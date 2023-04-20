@@ -42,10 +42,16 @@ export default {
             return window.screen.width <= 1024;
         },
         async startCounting() {
+            if (this.loading) {
+                return;
+            }
             this.loading = true;
             this.counting_timeout = setInterval(function () { this.counting_num++; }.bind(this), 1000);
         },
         async endCounting() {
+            if (!this.loading) {
+                return;
+            }
             if (this.counting_timeout > 0) {
                 this.counting_num = 0;
                 window.clearInterval(this.counting_timeout);
@@ -75,10 +81,14 @@ export default {
                 } else {
                     window.showMessage("unable to append to existing dialogue:" + this.working_dialogue_id);
                 }
-
             }
             this.prompt = "";
-            await api.completeChunkedDialogue({ id: this.working_dialogue_id }, async function (dialogue) {
+            await this.completeChunkedSingleDialogue(this.working_dialogue_id);
+            this.endCounting();
+        },
+        async completeChunkedSingleDialogue(id) {
+            this.startCounting();
+            await api.completeChunkedDialogue({ id }, async function (dialogue) {
                 if (!dialogue || dialogue.id <= 0) {
                     console.log("finished:", dialogue);
                     return;
@@ -163,7 +173,12 @@ export default {
             </div>
         </div>
         <div class="dialogue-detail">
-            <div class="chat-list">
+            <div class="chat-list single-dialogue">
+                <div class="action-icon-group">
+                    <i class="refresh-icon action-icon" @click="completeChunkedSingleDialogue(working_dialogue.id)">
+                        <img title="Regenerate" alt="Regenerate" src="/refresh.png" />
+                    </i>
+                </div>
                 <ul class="chat-list-ul">
                     <li v-for="(message, index) in working_dialogue.messages" :key="message.content + index"
                         class="single-chat">
@@ -206,6 +221,16 @@ h1 {
 .chat-list-ul {
     list-style: none;
     padding: 0 0 20px 0;
+}
+
+.single-dialogue:hover .action-icon {
+    display: inline-block;
+    z-index: 1000;
+}
+
+.single-dialogue:hover .action-icon-group {
+    bottom: 0px;
+    box-shadow: hsla(200, 100%, 90%, 1) 2px 5px 5px;
 }
 
 .chat-list-ul li.single-chat {

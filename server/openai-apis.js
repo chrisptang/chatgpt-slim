@@ -44,15 +44,20 @@ async function make_openai_request(path, data) {
         postJson.method = "POST";
         postJson.body = JSON.stringify(data);
     }
-    let resposne = await fetch(url, postJson);
-    if (data && data.stream) {
-        return resposne;
+    try {
+        let resposne = await fetch(url, postJson);
+        if (data && data.stream) {
+            return resposne;
+        }
+        if (resposne.status != 200) {
+            console.error("error code:", resposne.status, await resposne.text());
+            return {};
+        }
+        return await resposne.json();
+    } catch (err) {
+        console.error("request error:", err.message, "data:", data);
+        return { error: true, message: err.message };
     }
-    if (resposne.status != 200) {
-        console.error("error code:", resposne.status, await resposne.text());
-        return {};
-    }
-    return await resposne.json();
 }
 
 let test = await make_openai_request("models")
