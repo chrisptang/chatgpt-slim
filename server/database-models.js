@@ -1,4 +1,4 @@
-import { Sequelize, Op, json } from 'sequelize';
+import { Sequelize } from 'sequelize';
 
 const pg_user = process.env.PG_USER || 'postgres'
     , pg_password = process.env.PG_PASSWORD || 'postgres-local'
@@ -6,9 +6,20 @@ const pg_user = process.env.PG_USER || 'postgres'
     , pg_port = process.env.PG_PORT || 5432
     , pg_db = process.env.PG_DB || 'chatgpt';
 
-const pd_url = `postgres://${pg_user}:${pg_password}@${pg_host}:${pg_port}/${pg_db}`
+const pd_url = `postgres://${pg_user}:${pg_password}@${pg_host}:${pg_port}/${pg_db}`;
+const sqlite_url = `sqlite:/data/sqlite`;
 
-const database = new Sequelize(pd_url);
+let database = null;
+if ('true' === process.env.USE_SQLITE) {
+    database = new Sequelize(sqlite_url, null, null, {
+        dialect: 'sqlite',
+        storage: '/data/sqlite'
+    });
+    console.log("\n\nusing sqlite as databse:", sqlite_url);
+} else {
+    database = new Sequelize(pd_url);
+}
+
 
 const Chats = database.define('chat_records', {
     ref_id: Sequelize.BIGINT,
