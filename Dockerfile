@@ -1,20 +1,19 @@
+FROM node:17-alpine3.12 as builder
+
+ADD server/package.json /app/server/package.json
+WORKDIR /app/server
+RUN npm config set registry https://registry.npmmirror.com/ && \
+    npm install --loglevel verbose
+
 FROM node:17-alpine3.12
 
-# ADD server/node_modules /app/server/node_modules
-ADD server/package.json /app/server/package.json
+WORKDIR /app/server
+COPY --from=builder /app/server/node_modules ./node_modules
+
 ADD server/database-models.js /app/server/database-models.js
 ADD server/user-operations.js /app/server/user-operations.js
 ADD server/openai-apis.js /app/server/server.js
-
-WORKDIR /app/server
-
-# use tsinghua as mirror site.
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
-    apk add --no-cache make gcc g++ python3 && \
-    npm config set registry https://registry.npmmirror.com/ && \
-    npm install --save-exact --production sharp && \
-    apk del make gcc g++ python3 && \
-    npm install
+COPY --from=builder /app/server/package.json .
 
 ADD dist /app/frontend/
 

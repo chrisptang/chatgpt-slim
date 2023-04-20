@@ -2,7 +2,7 @@ version: '2'
 
 services:
   chat-server:
-    container_name: chat-server
+    container_name: chat-server-sqlite
     image: chrisptang/chatgpt-slim:0.0.1
     ports:
       - 9001:5000
@@ -15,7 +15,7 @@ services:
       - USE_SQLITE=true
     volumes:
       - ./avatar:/app/frontend/avatar
-      - ./data/sqlite:/data/sqlite
+      - ./data/sqlite:/app/data/sqlite
 
   adminer:
     image: adminer:latest

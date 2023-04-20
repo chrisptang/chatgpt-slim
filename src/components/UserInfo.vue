@@ -1,7 +1,7 @@
 <template>
     <div>
         <a :href="user.html_url" target="_blank">
-            <img class="user-info" :src="user.avatar_url_local" />
+            <img class="user-info" :src="`${user.avatar_url}&s=80`" />
             <span>Hello, {{ user.login }}</span>
         </a>
     </div>

@@ -7,15 +7,14 @@ const pg_user = process.env.PG_USER || 'postgres'
     , pg_db = process.env.PG_DB || 'chatgpt';
 
 const pd_url = `postgres://${pg_user}:${pg_password}@${pg_host}:${pg_port}/${pg_db}`;
-const sqlite_url = `sqlite:/data/sqlite`;
 
 let database = null;
 if ('true' === process.env.USE_SQLITE) {
-    database = new Sequelize(sqlite_url, null, null, {
+    database = new Sequelize({
         dialect: 'sqlite',
-        storage: '/data/sqlite'
+        storage: '/app/data/sqlite/chat_db_file'
     });
-    console.log("\n\nusing sqlite as databse:", sqlite_url);
+    console.log("\n\nusing sqlite as databse:");
 } else {
     database = new Sequelize(pd_url);
 }
