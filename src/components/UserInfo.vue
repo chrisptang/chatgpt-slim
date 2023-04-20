@@ -1,7 +1,7 @@
 <template>
     <div>
         <a :href="user.html_url" target="_blank">
-            <img class="user-info" :src="`${user.avatar_url}&s=80`" />
+            <img class="user-info" :src="user.avatar_url" />
             <span>Hello, {{ user.login }}</span>
         </a>
     </div>
@@ -23,7 +23,10 @@ export default {
     },
     async created() {
         try {
-            this.user = await api.listUserInfo();
+            let user = await api.listUserInfo();
+            user.avatar_url = user.avatar_url ? `${user.avatar_url}&s=80` : '';
+            this.user = user;
+            console.log(this.user)
         } catch (error) {
             console.error(error.message, error);
         }

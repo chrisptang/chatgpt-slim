@@ -61,16 +61,17 @@ function setupLoginWithGithub(app) {
                 console.log("url is allowed:", req.url);
                 next();
             }
-            if (!req.cookies.token) {
+            let token = req.cookies.token
+            if (!token) {
                 console.log("user not found on session:", req.url);
                 // user is not authenticated, redirect to login page
                 return return401(res);
             } else {
-                let user = await Users.findOne({ where: { access_token: req.cookies.token } });
+                let user = await Users.findOne({ where: { access_token: token } });
                 if (user) {
                     req.user = JSON.parse(user.api_response);
                 } else {
-                    console.error("can not find user for token:", access_token, "forcing user to relogin");
+                    console.error("can not find user for token:", token, "forcing user to relogin");
                     res.cookie("token", "", { expires: new Date(0), maxAge: -1 });
                     return return401(res);
                 }
@@ -98,7 +99,6 @@ function setupLoginWithGithub(app) {
             }
             user = JSON.parse(user.api_response);
         }
-        user.avatar_url_local = `/avatar/avatar_${user.login}_128x128.png`;
         res.json(user);
     });
 
