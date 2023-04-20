@@ -2,11 +2,7 @@ import { Users } from "./database-models.js"
 import cookieParser from "cookie-parser";
 import HttpsProxyAgent from "https-proxy-agent";
 import fetch from 'node-fetch';
-// import sharp from 'sharp';
-// import fs from 'fs';
-// import path from "path";
 
-// Passport authentication setup
 // This assumes that you have already created a GitHub OAuth app and have the app ID and secret
 const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const NEED_AUTH = !!GITHUB_CLIENT_ID && `0${GITHUB_CLIENT_ID}`.length > 5;
@@ -15,32 +11,6 @@ const PORT = process.env.PORT || "8081";
 const GITHUB_LOGIN_CALLBACK_HOST = process.env.GITHUB_LOGIN_CALLBACK_HOST;
 let callback_host = GITHUB_LOGIN_CALLBACK_HOST || `localhost:${PORT}`
 const GITHUB_CALLBACK_URL = `http://${callback_host}/auth/github/callback`;
-// const AVATAR_ROOT = path.join(process.env.SERVER_STATIC_PATH, "avatar");
-
-// try { // Create directory if necessary 
-//     if (!fs.existsSync(AVATAR_ROOT)) {
-//         fs.mkdirSync(AVATAR_ROOT);
-//     }
-// } catch (err) {
-//     console.error("unable to create avatar directory:", AVATAR_ROOT, err.stack)
-// }
-
-// async function downloadAndResizeAvatar(avatar_url, login) {
-//     // Fetch the image data
-//     const response = await fetchGithubApi(avatar_url, null, "get");
-//     const buffer = Buffer.from(await response.arrayBuffer());
-//     let raw_avatar = path.join(AVATAR_ROOT, `avatar_${login}.png`);
-//     fs.writeFileSync(raw_avatar, buffer);
-
-//     // Resize the image to 128x128
-//     const resizedBuffer = await sharp(buffer).resize(128, 128).toBuffer();
-
-//     let resized_avatar = path.join(AVATAR_ROOT, `avatar_${login}_128x128.png`);
-//     // Save the image to the local disk
-//     fs.writeFileSync(resized_avatar, resizedBuffer);
-// }
-
-
 
 console.log("GITHUB_CALLBACK_URL:", GITHUB_CALLBACK_URL);
 
@@ -87,17 +57,21 @@ function setupLoginWithGithub(app) {
             return;
         }
         try {
+            if (`${req.url}`.match(AUTH_ALLOWED_PATHS)) {
+                console.log("url is allowed:", req.url);
+                next();
+            }
             if (!req.cookies.token) {
                 console.log("user not found on session:", req.url);
-                if (!`${req.url}`.match(AUTH_ALLOWED_PATHS)) {
-                    // user is not authenticated, redirect to login page
-                    return return401(res);
-                }
+                // user is not authenticated, redirect to login page
+                return return401(res);
             } else {
                 let user = await Users.findOne({ where: { access_token: req.cookies.token } });
                 if (user) {
                     req.user = JSON.parse(user.api_response);
                 } else {
+                    console.error("can not find user for token:", access_token, "forcing user to relogin");
+                    res.cookie("token", "", { expires: new Date(0), maxAge: -1 });
                     return return401(res);
                 }
             }
