@@ -20,4 +20,6 @@ export SERVER_STATIC_PATH=`pwd`
 export SERVER_STATIC_PATH="${SERVER_STATIC_PATH/server/dist}"
 echo "SERVER_STATIC_PATH:${SERVER_STATIC_PATH}"
 
+export GITHUB_LOGIN_CALLBACK_HOST=localhost:8081
+
 node openai-apis.js

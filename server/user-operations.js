@@ -44,6 +44,7 @@ function setupLoginWithGithub(app) {
 
     function return401(res, message = null) {
         if (!res.headersSent) {
+            console.log("github_login:", github_login)
             res.status(401).send(message ? message : JSON.stringify({ login: github_login }));
             res.end();
         }
@@ -61,10 +62,11 @@ function setupLoginWithGithub(app) {
             if (`${req.url}`.match(AUTH_ALLOWED_PATHS)) {
                 console.log("url is allowed:", req.url);
                 next();
+                return;
             }
             let token = req.cookies.token
             if (!token) {
-                console.log("user not found on session:", req.url);
+                console.log("user not found on session:", req.url, token);
                 // user is not authenticated, redirect to login page
                 return return401(res);
             } else {
@@ -96,9 +98,10 @@ function setupLoginWithGithub(app) {
         if (!user) {
             user = await Users.findOne({ where: { access_token } });
             if (!user) {
-                return return401(res);
+                user = {};
+            } else {
+                user = JSON.parse(user.api_response);
             }
-            user = JSON.parse(user.api_response);
         }
         res.json(user);
     });
@@ -107,7 +110,8 @@ function setupLoginWithGithub(app) {
         try {
             let code = req.query.code;
             if (!code) {
-                return return401(res);
+                res.send("invalid response:" + req.query);
+                return;
             }
 
             let url = `https://github.com/login/oauth/access_token?client_id=${GITHUB_CLIENT_ID}&client_secret=${GITHUB_CLIENT_SECRET}&code=${code}`;
@@ -115,22 +119,23 @@ function setupLoginWithGithub(app) {
             let api_response = await resposne.text()
             console.error("exchange for token http code:", resposne.status, api_response);
             if (resposne.status != 200) {
-                return return401(res, "failed to login with github.");
+                res.send("failed to login with github.");
+                return;
             }
             let { access_token, scope, token_type } = { ...JSON.parse(api_response) };
             if (!access_token) {
-                res.send(api_response);
-                res.end();
+                res.send("invalid response:" + req.query);
                 return;
             }
             console.log("access_token acquired:", access_token.substring(0, 10));
 
-            resposne = await fetch("https://api.github.com/user", access_token, 'get');
+            resposne = await fetchGithubApi("https://api.github.com/user", access_token, 'get');
 
             api_response = await resposne.text()
             console.error("http code:", resposne.status, api_response);
             if (resposne.status != 200) {
-                return return401(res, "failed to fetch user info");
+                res.send("invalid response:" + api_response);
+                return;
             }
 
             let { name, email, login, avatar_url } = { ...JSON.parse(api_response) };
@@ -145,11 +150,8 @@ function setupLoginWithGithub(app) {
             } else {
                 await Users.update({ name, access_token, api_response: JSON.stringify(api_response) }, { where: { login } });
             }
+            console.log("send access_token:", access_token)
             res.cookie("token", access_token, { httpOnly: true, maxAge: 1000 * 3600 * 24 * 30 });
-
-            //resize avatar:
-            // await downloadAndResizeAvatar(avatar_url, login);
-
             res.redirect("/");
         } catch (err) {
             console.error(err.message, err.stack);

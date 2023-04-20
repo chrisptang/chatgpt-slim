@@ -428,7 +428,7 @@ app.use((req, res) => {
             res.status(500).send(JSON.stringify({ error: true }));
         }
         res.end();
-    } else if (!req.url.match(AUTH_ALLOWED_PATHS)) {
+    } else if (!req.url.match(AUTH_ALLOWED_PATHS) && !req.url.startsWith("/auth/")) {
         // fullback to /home
         res.sendFile(path.join(static_path, 'index.html'));
     }
