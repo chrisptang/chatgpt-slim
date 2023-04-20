@@ -7,10 +7,13 @@ ADD server/user-operations.js /app/server/user-operations.js
 ADD server/openai-apis.js /app/server/server.js
 
 WORKDIR /app/server
-RUN apk add --no-cache make gcc g++ python3 && \
-    apk del make gcc g++ python3 && \
+
+# use tsinghua as mirror site.
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
+    apk add --no-cache make gcc g++ python3 && \
     npm config set registry https://registry.npmmirror.com/ && \
     npm install --save-exact --production sharp && \
+    apk del make gcc g++ python3 && \
     npm install
 
 ADD dist /app/frontend/
@@ -25,6 +28,7 @@ ENV OPENAI_API_KEY "please_set_OPENAI_API_KEY_env"
 ENV GITHUB_CLIENT_ID ""
 ENV GITHUB_CLIENT_SECRET "secret-of-the-clientId"
 ENV GITHUB_LOGIN_CALLBACK_HOST ""
+ENV USE_SQLITE "false"
 
 
 EXPOSE ${PORT}
