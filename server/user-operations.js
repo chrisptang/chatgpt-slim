@@ -27,6 +27,7 @@ async function fetchGithubApi(url, access_token = "", method = "get") {
     if (access_token && access_token.length > 10) {
         headers["Authorization"] = `Bearer ${access_token}`;
     }
+    conf.headers = headers;
     if (process.env.HTTP_PROXY && process.env.HTTP_PROXY.length > 10) {
         conf.agent = new HttpsProxyAgent(process.env.HTTP_PROXY);
         console.log("using proxy:", conf.agent);
@@ -117,6 +118,11 @@ function setupLoginWithGithub(app) {
                 return return401(res, "failed to login with github.");
             }
             let { access_token, scope, token_type } = { ...JSON.parse(api_response) };
+            if (!access_token) {
+                res.send(api_response);
+                res.end();
+                return;
+            }
             console.log("access_token acquired:", access_token.substring(0, 10));
 
             resposne = await fetch("https://api.github.com/user", access_token, 'get');
@@ -147,8 +153,10 @@ function setupLoginWithGithub(app) {
             res.redirect("/");
         } catch (err) {
             console.error(err.message, err.stack);
-            res.status(500).send(err.message);
-            res.end();
+            if (!res.headersSent) {
+                res.status(500).send(err.message);
+                res.end();
+            }
         }
     });
 }
