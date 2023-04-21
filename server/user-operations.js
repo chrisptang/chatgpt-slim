@@ -51,7 +51,8 @@ function setupLoginWithGithub(app) {
         return;
     }
 
-    app.use(async (req, res, next) => {
+    // auth check middleware:
+    app.use('/api/*', async (req, res, next) => {
         if (!NEED_AUTH) {
             console.warn("working in no-auth mode");
             req.user = { login: "default-user" };
@@ -59,12 +60,7 @@ function setupLoginWithGithub(app) {
             return;
         }
         try {
-            if (`${req.url}`.match(AUTH_ALLOWED_PATHS)) {
-                console.log("url is allowed:", req.url);
-                next();
-                return;
-            }
-            let token = req.cookies.token
+            let { token } = { ...req.cookies };
             if (!token) {
                 console.log("user not found on session:", req.url, token);
                 // user is not authenticated, redirect to login page
@@ -75,7 +71,7 @@ function setupLoginWithGithub(app) {
                     req.user = JSON.parse(user.api_response);
                 } else {
                     console.error("can not find user for token:", token, "forcing user to relogin");
-                    res.cookie("token", "", { expires: new Date(0), maxAge: -1 });
+                    res.clearCookie("token");
                     return return401(res);
                 }
             }

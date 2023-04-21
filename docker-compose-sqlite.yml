@@ -20,5 +20,7 @@ services:
   adminer:
     image: adminer:latest
     container_name: adminer_chatgpt_sqlite
+    volumes:
+      - ./data/sqlite:/app/data/sqlite
     ports:
       - 4188:8080
