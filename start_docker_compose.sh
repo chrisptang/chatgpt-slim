@@ -56,4 +56,4 @@ echo "GITHUB_LOGIN_CALLBACK_HOST=$GITHUB_LOGIN_CALLBACK_HOST" >>.env
 printf "starting services with config:"
 cat .env2
 
-docker-compose up -d
+docker-compose -f docker-compose.yml up -d
