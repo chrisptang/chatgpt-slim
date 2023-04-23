@@ -154,7 +154,7 @@ export default {
 
 <template>
     <div class="dialogue-container">
-        <div class="dialogue-list" :hidden="isMobile()">
+        <div class="dialogue-list custom-scrollbar" :hidden="isMobile()">
             <div @click="switchDialogue(0)" class="dialogue-title"
                 :class="working_dialogue_id == 0 ? 'dialogue-title selected-dialogue' : 'dialogue-title'">
                 <p class="chat-propmt">New Dialogue</p>
@@ -172,7 +172,7 @@ export default {
                 </p>
             </div>
         </div>
-        <div class="dialogue-detail">
+        <div class="dialogue-detail custom-scrollbar">
             <div class="chat-list single-dialogue">
                 <div class="action-icon-group">
                     <i class="refresh-icon action-icon" @click="completeChunkedSingleDialogue(working_dialogue.id)">
@@ -290,7 +290,6 @@ p.chat-propmt {
     box-shadow: hsla(200, 100%, 90%, 1) 0 5px 20px;
     margin-bottom: 10px;
     padding: 5px 10px;
-    margin-right: 20px;
 }
 
 .dialogue-title p.chat-propmt {
@@ -357,18 +356,41 @@ p.chat-propmt {
     .dialogue-list {
         width: 300px;
         height: 90vh;
-        overflow-y: auto;
+        padding-right: 10px;
     }
 
     .dialogue-detail {
-        width: calc(100% - 360px);
+        width: calc(100% - 100px);
         height: 90vh;
+        margin-left: 10px;
+    }
+
+    .dialogue-detail,
+    .dialogue-list {
+        overflow-y: hidden;
+    }
+
+    .dialogue-detail:hover,
+    .dialogue-list:hover {
         overflow-y: auto;
     }
 
     .dialogue-container {
-        width: 100vw;
+        width: calc(100vw - 90px);
         max-width: 1680px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 2px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 10px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #999;
     }
 }
 
