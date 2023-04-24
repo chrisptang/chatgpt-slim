@@ -1,9 +1,5 @@
 #!/bin/bash
 
-docker network inspect host >/dev/null 2>&1 || docker network create --driver bridge \
-    --attachable --internal --subnet=172.16.0.0/24 --gateway=172.16.0.1 \
-    --opt com.docker.network.bridge.name=host host
-
 env=$(cat .env)
 if [ ${#env} -gt 15 ]; then
     printf "existing env:\n"
@@ -15,8 +11,8 @@ if [ ${#env} -gt 15 ]; then
     fi
 fi
 
-# export HOST_NAME=$(ifconfig | grep 192. | awk '{print $2}')
-export HOST_NAME=$(hostname)
+export HOST_NAME=$(ifconfig | grep 192. | awk '{print $2}')
+# export HOST_NAME=$(hostname)
 echo "HOST_NAME:$HOST_NAME"
 
 read -p "...specify your proxy port, default to be 8001:" proxy_port
@@ -51,7 +47,7 @@ else
     echo "...you choose to use this tool in no-auth mode."
 fi
 
-cat /dev/null >.env2
+cat /dev/null >.env
 echo "OPENAI_API_KEY=$OPENAI_API_KEY" >.env
 echo "HTTP_PROXY=$HTTP_PROXY" >>.env
 echo "GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID" >>.env
@@ -74,4 +70,4 @@ fi
 
 printf "\n\nstarting with:$compose_file"
 
-docker-compose -f $compose_file up -d
+docker-compose --env-file .env -f $compose_file up -d

@@ -27,7 +27,7 @@
         return content;
       }else{
         //append copy code button：
-        return content.replaceAll(/(<code>)|(<code\s)/g,'<i class="copy-code-button">copy</i><code>')
+        return content.replaceAll(/<\/code><\/pre>/g,'</code><i class="copy-code-button">copy</i></pre>')
       }
     }
   </script>

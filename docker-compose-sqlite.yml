@@ -1,16 +1,11 @@
 version: '2'
 
-networks:
-  default:
-    external:
-      name: host
-
 services:
   chat-server:
-    # container_name: chat-server-sqlite
+    container_name: chat-server-sqlite
     image: chrisptang/chatgpt-slim:0.0.1
-    # ports:
-    #   - 9001:5000
+    ports:
+      - 9001:5000
     environment:
       - OPENAI_API_KEY=$OPENAI_API_KEY
       - HTTP_PROXY=$HTTP_PROXY

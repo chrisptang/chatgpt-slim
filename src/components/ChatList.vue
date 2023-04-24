@@ -27,6 +27,14 @@ export default {
             loading: false,
         };
     },
+    updated() {
+        console.log("updated");
+        const container = this.$refs.codeContainer;
+        const copyButtons = container.querySelectorAll('.copy-code-button');
+        copyButtons.forEach(button => {
+            button.addEventListener('click', this.handleCopyCode);
+        });
+    },
     async created() {
         this.refresh();
     },
@@ -122,6 +130,15 @@ export default {
             chat.id = id
             return chat
         },
+        handleCopyCode(event) {
+            console.log(event);
+            const code = event.target.parentNode.querySelector('code');
+            if (code) {
+                navigator.clipboard.writeText(code.innerText);
+                event.target.innerText = 'copied!';
+                setTimeout(() => (event.target.innerText = 'copy'), 1000);
+            }
+        },
     },
 };
 </script>
@@ -129,7 +146,7 @@ export default {
 <template>
     <div style="width: 90vw;">
         <div class="chat-list">
-            <ul class="chat-list-ul">
+            <ul class="chat-list-ul" ref="codeContainer">
                 <li v-for="chat in chats" :key="chat.id" class="single-chat">
                     <p class="chat-propmt">
                         <span>{{ chat.propmt }}</span>
@@ -143,7 +160,7 @@ export default {
                     </div>
                     </p>
                     <p class="chat-response"
-                        v-html="window._renderMD(chat.assistant_chunked_resposne || chat.choices[0].message.content)">
+                        v-html="window._renderMD(chat.assistant_chunked_resposne || chat.choices[0].message.content, true)">
                     </p>
                 </li>
             </ul>

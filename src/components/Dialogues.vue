@@ -34,9 +34,26 @@ export default {
     async created() {
         this.refresh();
     },
+    updated() {
+        console.log("mounted");
+        const container = this.$refs.codeContainer;
+        const copyButtons = container.querySelectorAll('.copy-code-button');
+        copyButtons.forEach(button => {
+            button.addEventListener('click', this.handleCopyCode);
+        });
+    },
     methods: {
         async refresh() {
             await this.listDialogues();
+        },
+        handleCopyCode(event) {
+            console.log(event);
+            const code = event.target.parentNode.querySelector('code');
+            if (code) {
+                navigator.clipboard.writeText(code.innerText);
+                event.target.innerText = 'copied!';
+                setTimeout(() => (event.target.innerText = 'copy'), 1000);
+            }
         },
         isMobile() {
             return window.screen.width <= 1024;
@@ -145,7 +162,6 @@ export default {
             if (typeof record.messages === 'string') {
                 record.messages = JSON.parse(record.messages);
             }
-            console.log("record.messages:", typeof record.messages);
             return record;
         }
     },
@@ -173,7 +189,7 @@ export default {
             </div>
         </div>
         <div class="dialogue-detail custom-scrollbar">
-            <div class="chat-list single-dialogue">
+            <div class="chat-list single-dialogue" ref="codeContainer">
                 <div class="action-icon-group">
                     <i class="refresh-icon action-icon" @click="completeChunkedSingleDialogue(working_dialogue.id)">
                         <img title="Regenerate" alt="Regenerate" src="/refresh.png" />

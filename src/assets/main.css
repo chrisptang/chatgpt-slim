@@ -37,8 +37,26 @@
   width: 14px;
 }
 
-.copy-code-button{
+.copy-code-button {
   display: none;
+  position: absolute;
+  right: 0px;
+  top: 0;
+  background-color: #666;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+.copy-code-button:hover {
+  background-color: #888;
+}
+
+.copy-code-button:active {
+  background-color: #aaa;
+}
+
+.chat-response:hover .copy-code-button {
+  display: inline;
 }
 
 #app {
