@@ -2,6 +2,8 @@ version: '2'
 
 services:
   chat-server:
+    env_file:
+      - ./.env2
     container_name: chat-server-sqlite
     image: chrisptang/chatgpt-slim:0.0.1
     ports:
