@@ -416,6 +416,10 @@ p.chat-propmt {
         background: #444;
     }
 
+    .single-dialogue:hover .action-icon-group {
+        box-shadow: #222 2px 5px 5px;
+    }
+
     p.chat-propmt {
         background-color: #222;
         box-shadow: #111 0 5px 5px;
