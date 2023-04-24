@@ -183,7 +183,7 @@ export default {
                     <li v-for="(message, index) in working_dialogue.messages" :key="message.content + index"
                         class="single-chat">
                         <p :class="message.role == 'user' ? 'chat-propmt' : 'chat-response'"
-                            v-html="message.role == 'user' ? message.content : window._renderMD(message.content)">
+                            v-html="message.role == 'user' ? message.content : window._renderMD(message.content, true)">
                         </p>
                     </li>
                 </ul>

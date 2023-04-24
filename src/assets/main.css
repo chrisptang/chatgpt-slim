@@ -37,6 +37,10 @@
   width: 14px;
 }
 
+.copy-code-button{
+  display: none;
+}
+
 #app {
   max-width: 1680px;
   margin: 0 auto;

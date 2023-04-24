@@ -18,11 +18,17 @@
   <script type="module" src="/src/main.js"></script>
   <script>
     window._md = window.markdownit();
-    window._renderMD = (content) => {
+    window._renderMD = (content, copyCode = false) => {
       if (!content || content.length <= 0) {
         content = '<waiting>';
       }
-      return _md.render(content);
+      content = _md.render(content);
+      if (!copyCode) {
+        return content;
+      }else{
+        //append copy code button：
+        return content.replaceAll(/(<code>)|(<code\s)/g,'<i class="copy-code-button">copy</i><code>')
+      }
     }
   </script>
 </body>
