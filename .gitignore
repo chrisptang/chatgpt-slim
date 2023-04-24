@@ -34,3 +34,4 @@ server/package-lock.json
 .env
 avatar/
 data/
+.env*
