@@ -43,3 +43,5 @@ cat .env2
 printf "\n\n"
 
 docker-compose --env-file .env2 -f docker-compose-sqlite.yml up -d
+
+printf "started, visit: http://localhost:9001"
