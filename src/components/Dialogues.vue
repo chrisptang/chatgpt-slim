@@ -37,7 +37,7 @@ export default {
         this.refresh();
     },
     updated() {
-        console.log("mounted");
+        console.log("updated");
         const container = this.$refs.codeContainer;
         const copyButtons = container.querySelectorAll('.copy-code-button');
         copyButtons.forEach(button => {
@@ -238,7 +238,8 @@ export default {
                 <p>
                     <button value="chat" @click="completeChunkedDialogue()" :disabled="loading"
                         class="new-chat-btn">chat</button>
-                    <button style="margin-left: 10px;" value="savePdf" @click="savePdf()" :disabled="loading" class="new-chat-btn">save pdf</button>
+                    <button style="margin-left: 10px;" value="savePdf" @click="savePdf()" :disabled="loading"
+                        class="new-chat-btn">save to pdf</button>
                 </p>
                 <p style="min-height: 30px;">
                     <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
@@ -253,62 +254,28 @@ export default {
 </template>
 
 <style scoped>
-.hide {
-    visibility: hidden !important;
-}
-
-h1 {
-    font-weight: 500;
-    font-size: 2.6rem;
-    top: -10px;
-}
-
-.chat-list-ul {
-    list-style: none;
-    padding: 0 0 20px 0;
-}
-
 .single-dialogue:hover .action-icon {
     display: inline-block;
     z-index: 1000;
 }
 
+.dialogue-container p.chat-propmt{
+    margin-right: 0;
+}
+
 .single-dialogue:hover .action-icon-group {
     bottom: 0px;
-    box-shadow: hsla(200, 100%, 90%, 1) 2px 5px 5px;
-}
-
-.chat-list-ul li.single-chat {
-    margin-bottom: 20px;
-}
-
-.chat-list-ul li.single-chat .chat-response {
-    background-color: ghostwhite;
-}
-
-h3 {
-    font-size: 1.2rem;
-}
-
-p.chat-response {
-    overflow-wrap: anywhere;
-    padding: 5px 10px;
-    margin-left: 20px;
+    box-shadow: val(--color-user-message) 2px 5px 5px;
 }
 
 .dialogue-title.selected-dialogue .chat-propmt {
     color: aliceblue;
     font-weight: bolder;
-    background-color: hsla(200, 100%, 50%, 1);
+    background-color: var(--color-list-item-selected);
 }
 
 .dialogue-title.selected-dialogue .chat-propmt span {
     font-weight: bolder;
-}
-
-p.chat-response,
-p.chat-propmt {
-    border-radius: 5px;
 }
 
 .delete-icon {
@@ -325,20 +292,8 @@ p.chat-propmt {
     display: flex;
 }
 
-code {
-    white-space: break-spaces;
-}
-
-p.chat-propmt {
-    white-space: pre-wrap;
-    background-color: hsla(200, 100%, 90%, 1);
-    box-shadow: hsla(200, 100%, 90%, 1) 0 5px 20px;
-    margin-bottom: 10px;
-    padding: 5px 10px;
-}
-
 .dialogue-title p.chat-propmt {
-    background-color: hsla(200, 100%, 75%, 1);
+    background-color: var(--color-list-item);
 }
 
 .dialogue-title {
@@ -346,7 +301,7 @@ p.chat-propmt {
 }
 
 .dialogue-title:hover p.chat-propmt {
-    background-color: hsla(200, 100%, 65%, 1);
+    background-color: var(--color-list-item-hovered);
 }
 
 .dialogue-title:hover p.chat-propmt i.delete-icon {
@@ -358,37 +313,6 @@ p.chat-propmt {
 .greetings h1 {
     text-align: center;
     padding-top: 20px;
-}
-
-.new-chat .new-chat-box {
-    padding: 10px;
-    width: 100%;
-    max-width: 100vw;
-    max-height: 300px;
-    min-height: 50px;
-    border-radius: 5px;
-}
-
-.new-chat .new-chat-btn {
-    padding: 5px 10px;
-    background-color: hsla(160, 100%, 37%, 1);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: larger;
-}
-
-.new-chat .new-chat-btn:hover {
-    background-color: hsla(160, 100%, 80%, 1);
-    cursor: pointer;
-}
-
-.new-chat .new-chat-btn:active {
-    background-color: hsla(160, 100%, 60%, 1);
-}
-
-.new-chat .new-chat-btn:disabled {
-    background-color: lightgrey;
 }
 
 @media (min-width: 1024px) {
@@ -408,6 +332,7 @@ p.chat-propmt {
         width: calc(100% - 100px);
         height: 90vh;
         margin-left: 10px;
+        padding-right: 10px;
     }
 
     .dialogue-detail,

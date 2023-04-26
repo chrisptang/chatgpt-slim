@@ -1,7 +1,7 @@
 <template>
     <div>
         <a :href="user.html_url" target="_blank">
-            <img class="user-info" :src="user.avatar_url" />
+            <img class="user-avatar" :src="user.avatar_url" />
             <span>Hello, {{ user.login }}</span>
         </a>
     </div>
@@ -34,7 +34,7 @@ export default {
 };
 </script>
 <style>
-img.user-info {
+img.user-avatar {
     width: 32px;
     object-fit: contain;
     margin-right: 10px;

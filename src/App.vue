@@ -2,6 +2,7 @@
 import UserInfo from './components/UserInfo.vue'
 import PopUpMessage from './components/PopUpMessage.vue';
 import routers from './router/router-config.js';
+import DarkModeToggle from './components/DarkModeToggle.vue';
 
 </script>
 
@@ -20,6 +21,7 @@ import routers from './router/router-config.js';
       </div>
       <div class="user-info">
         <UserInfo />
+        <DarkModeToggle />
       </div>
     </div>
     <div class="view-container">
@@ -38,18 +40,19 @@ import routers from './router/router-config.js';
 }
 
 .route-item .selected {
-  color: hsla(200, 100%, 50%, 1);
+  color: var(--color-list-item-selected);
   font-weight: bolder;
+}
+
+.view-container {
+  margin-top: calc(4.5rem);
 }
 
 .user-info {
   right: calc(var(--section-gap) / 4);
   position: absolute;
   bottom: calc(var(--section-gap) / 20);
-}
-
-.view-container {
-  margin-top: calc(4.5rem);
+  display: flex;
 }
 
 .header-links {
@@ -102,7 +105,7 @@ nav a:first-of-type {
 
 @media(prefers-color-scheme: dark) {
   .header {
-    background-color: #0a0a0a;
+    background-color: var(--color-background);
   }
 }
 
