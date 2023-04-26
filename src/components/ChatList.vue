@@ -144,7 +144,7 @@ export default {
 </script>
 
 <template>
-    <div style="width: 90vw;">
+    <div class="chat-list-container">
         <div class="chat-list">
             <ul class="chat-list-ul" ref="codeContainer">
                 <li v-for="chat in chats" :key="chat.id" class="single-chat">
