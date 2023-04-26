@@ -1,5 +1,7 @@
 <script>
 import api from "@/api";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas'
 
 const new_dialogue_obj = JSON.stringify({
     title: "Dialogue with ChatGPT-3.5",
@@ -163,6 +165,32 @@ export default {
                 record.messages = JSON.parse(record.messages);
             }
             return record;
+        },
+        pxToMm(px) {
+            return px * 25.4 / 96;
+        },
+        async savePdf() {
+
+            this.startCounting();
+            // Get the HTML content with styles
+            const content = document.querySelector('#dialogueContent');
+            const width = this.pxToMm(content.clientWidth), height = this.pxToMm(content.clientHeight);
+
+            const options = {
+                useCORS: true,
+                allowTaint: true,
+                logging: true,
+            };
+
+            // use html2canvas to take a screenshot of the HTML element and add that to the PDF
+            let canvas = await html2canvas(content, options);
+
+            const doc = new jsPDF({ format: [width, height], compress: true });
+
+            const imgData = canvas.toDataURL('image/png');
+            doc.addImage(imgData, 'PNG', 0, 0, width, height);
+            this.endCounting();
+            doc.save(`dialogue_${this.working_dialogue_id}_${new Date().toISOString()}.pdf`);
         }
     },
 };
@@ -189,7 +217,7 @@ export default {
             </div>
         </div>
         <div class="dialogue-detail custom-scrollbar">
-            <div class="chat-list single-dialogue" ref="codeContainer">
+            <div class="chat-list single-dialogue" ref="codeContainer" id="dialogueContent">
                 <div class="action-icon-group">
                     <i class="refresh-icon action-icon" @click="completeChunkedSingleDialogue(working_dialogue.id)">
                         <img title="Regenerate" alt="Regenerate" src="/refresh.png" />
@@ -210,6 +238,7 @@ export default {
                 <p>
                     <button value="chat" @click="completeChunkedDialogue()" :disabled="loading"
                         class="new-chat-btn">chat</button>
+                    <button style="margin-left: 10px;" value="savePdf" @click="savePdf()" :disabled="loading" class="new-chat-btn">save pdf</button>
                 </p>
                 <p style="min-height: 30px;">
                     <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
