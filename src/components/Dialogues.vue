@@ -254,6 +254,10 @@ export default {
 </template>
 
 <style scoped>
+
+p.chat-propmt {
+  padding: 5px 10px;
+}
 .single-dialogue:hover .action-icon {
     display: inline-block;
     z-index: 1000;
