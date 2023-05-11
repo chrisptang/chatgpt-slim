@@ -185,7 +185,6 @@ export default {
 </template>
 
 <style scoped>
-
 @media (max-width: 800px) {
     #app {
         padding: 0;
@@ -193,14 +192,6 @@ export default {
 }
 
 @media (prefers-color-scheme: dark) {
-    .chat-list-ul li.single-chat {
-        color: #e0e0e0;
-        background: #444;
-    }
-
-    .action-icon-group {
-        background-color: #fff;
-    }
 
     .single-chat:hover .action-icon {
         background-color: #f8f8f8;
@@ -212,21 +203,6 @@ export default {
 
     .single-chat:hover .action-icon:active {
         background-color: #aaa;
-    }
-
-    p.chat-propmt {
-        background-color: #222;
-        box-shadow: #111 0 5px 5px;
-        color: #fff;
-    }
-
-    .chat-list-ul li.single-chat .chat-response {
-        background-color: #666;
-        color: white;
-    }
-
-    .new-chat .new-chat-box {
-        background-color: #ddd;
     }
 }
 </style>

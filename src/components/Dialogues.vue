@@ -259,7 +259,7 @@ export default {
     z-index: 1000;
 }
 
-.dialogue-container p.chat-propmt{
+.dialogue-container p.chat-propmt {
     margin-right: 0;
 }
 
@@ -365,42 +365,22 @@ export default {
 }
 
 @media (prefers-color-scheme: dark) {
-    .chat-list-ul li.single-chat {
-        color: #e0e0e0;
-        background: #444;
-    }
-
-    .single-dialogue:hover .action-icon-group {
-        box-shadow: #222 2px 5px 5px;
-    }
-
-    p.chat-propmt {
-        background-color: #222;
-        box-shadow: #111 0 5px 5px;
-        color: #fff;
-    }
-
-    .chat-list-ul li.single-chat .chat-response {
-        background-color: #666;
-        color: white;
-    }
-
-    .new-chat .new-chat-box {
-        background-color: #ddd;
-    }
-
     .dialogue-title.selected-dialogue .chat-propmt {
-        background-color: #222;
-        box-shadow: #111 0 5px 5px;
+        background-color: var(--color-list-item-selected);
+        box-shadow: var(--color-list-item-selected) 4px 4px 8px;
         color: #fff;
     }
 
-    .dialogue-title p.chat-propmt {
+    .single-dialogue {
+        background-color: var(--color-background);
+    }
+
+    /* .dialogue-title p.chat-propmt {
         background-color: #555;
     }
 
     .dialogue-title:hover p.chat-propmt {
         background-color: #777;
-    }
+    } */
 }
 </style>

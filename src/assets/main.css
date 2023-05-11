@@ -201,4 +201,29 @@ p.chat-propmt {
   #app {
     background-color: var(--color-background);
   }
+
+
+  .chat-list-ul li.single-chat,
+  .single-dialogue {
+    color: #e0e0e0;
+    background: #444;
+  }
+
+  .single-dialogue:hover .action-icon-group {
+    box-shadow: #222 2px 5px 5px;
+  }
+
+  p.chat-propmt {
+    background-color: #222;
+    box-shadow: #111 0 5px 5px;
+    color: #fff;
+  }
+
+  .new-chat .new-chat-box {
+    background-color: #ddd;
+  }
+
+  .action-icon-group {
+    background-color: #fff;
+  }
 }
