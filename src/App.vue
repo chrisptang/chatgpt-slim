@@ -46,6 +46,7 @@ import DarkModeToggle from './components/DarkModeToggle.vue';
 
 .view-container {
   margin-top: calc(4.5rem);
+  min-width: 100rem;
 }
 
 .user-info {
