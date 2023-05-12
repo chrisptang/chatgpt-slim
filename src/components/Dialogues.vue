@@ -169,8 +169,19 @@ export default {
         pxToMm(px) {
             return px * 25.4 / 96;
         },
+        //delete working dialuge message at index
+        async deleteDialogueMessage(index) {
+            //delete messages at index, this will delete gpt response at index+1, too.
+            let messages = this.working_dialogue.messages;
+            if (!messages || messages.length <= index) {
+                return;
+            }
+            messages.splice(index, 2);
+            this.startCounting();
+            this.working_dialogue = this.converDialogue(await api.updateDialogue({ messages, id: this.working_dialogue_id }));
+            this.endCounting();
+        },
         async savePdf() {
-
             this.startCounting();
             // Get the HTML content with styles
             const content = document.querySelector('#dialogueContent');
@@ -229,6 +240,10 @@ export default {
                         <p :class="message.role == 'user' ? 'chat-propmt' : 'chat-response'"
                             v-html="message.role == 'user' ? message.content : window._renderMD(message.content, true)">
                         </p>
+                        <i v-if="message.role == 'user'" class="delete-icon delete-dialogue-message"
+                            @click="deleteDialogueMessage(index)">
+                            <img src="/delete.png" />
+                        </i>
                     </li>
                 </ul>
             </div>
@@ -254,10 +269,19 @@ export default {
 </template>
 
 <style scoped>
-
 p.chat-propmt {
-  padding: 5px 10px;
+    padding: 5px 10px;
 }
+
+.single-chat:hover .delete-icon {
+    display: inline;
+    position: absolute;
+    right: 10px;
+    top: 4px;
+    cursor: pointer;
+    padding: 0;
+}
+
 .single-dialogue:hover .action-icon {
     display: inline-block;
     z-index: 1000;

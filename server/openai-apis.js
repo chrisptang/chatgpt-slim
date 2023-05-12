@@ -304,7 +304,7 @@ app.post('/api/dialogues/:id', async (req, res) => {
         res.end();
         return;
     }
-    let { prompt, title } = { ...req.body };
+    let { prompt, title, messages } = { ...req.body };
     console.log("updating dialogue:", prompt, title);
     let updateRecord = {};
     if (title && title.length > 2) {
@@ -313,6 +313,10 @@ app.post('/api/dialogues/:id', async (req, res) => {
     if (prompt && prompt.length > 2) {
         //{"prompt":"what time did it reach a population of 10000000?","id":24}
         updateRecord.messages = JSON.stringify(JSON.parse(record.messages).concat({ role: "user", content: prompt }));
+    }
+    if (messages && messages.length > 0) {
+        //update whole message list
+        updateRecord.messages = JSON.stringify(messages);
     }
 
     console.log("updateRecord", updateRecord);
