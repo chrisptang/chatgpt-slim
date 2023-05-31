@@ -139,6 +139,25 @@ export default {
                 setTimeout(() => (event.target.innerText = 'copy'), 1000);
             }
         },
+        breakLineOrChat(event) {
+            this.prompt += '\n';
+        },
+        handleKeyDown(event) {
+            console.log('Enter + Shift is pressed');
+            if (event.shiftKey) {
+                event.preventDefault(); // Prevents form submission
+                const textarea = event.target;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const currentValue = textarea.value;
+                textarea.value = currentValue.substring(0, start)
+                    + '\n'
+                    + currentValue.substring(end);
+                textarea.selectionStart = textarea.selectionEnd = start + 1;
+            } else {
+                this.completeChatChunked()
+            }
+        }
     },
 };
 </script>
@@ -167,6 +186,7 @@ export default {
         </div>
         <div class="new-chat" id="newChat">
             <textarea placeholder="type anything you want to start conversation with GPT-3.5" id="prompt-textarea"
+                @keydown.enter.exact.prevent="completeChatChunked"
                 type="textarea" v-model="prompt" class="new-chat-box" />
             <p>
                 <button value="chat" @click="completeChatChunked()" :disabled="loading" class="new-chat-btn">chat</button>

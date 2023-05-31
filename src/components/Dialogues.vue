@@ -249,7 +249,8 @@ export default {
             </div>
             <div class="new-chat">
                 <textarea placeholder="type anything you want to start conversation with GPT-3.5" id="prompt-textarea"
-                    type="textarea" v-model="prompt" class="new-chat-box" />
+                    @keydown.enter.exact.prevent="completeChunkedDialogue" type="textarea" v-model="prompt"
+                    class="new-chat-box" />
                 <p>
                     <button value="chat" @click="completeChunkedDialogue()" :disabled="loading"
                         class="new-chat-btn">chat</button>

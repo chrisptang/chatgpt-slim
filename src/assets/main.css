@@ -126,7 +126,7 @@ code {
 p.chat-propmt {
   white-space: pre-wrap;
   background-color: var(--color-user-message);
-  box-shadow: var(--color-user-message) 4px 4px 8px;
+  box-shadow: var(--color-user-message) 3px 3px 5px;
   margin-bottom: 10px;
   padding: 5px 80px 5px 10px;
   margin-right: 20px;
