@@ -12,6 +12,7 @@ services:
       - GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID
       - GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET
       - GITHUB_LOGIN_CALLBACK_HOST=$GITHUB_LOGIN_CALLBACK_HOST
+      - DEFAUL_OPENAI_MODEL=gpt-3.5-turbo-0613
     volumes:
       - ./avatar:/app/frontend/avatar
     depends_on:

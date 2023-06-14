@@ -228,21 +228,46 @@ app.post('/api/chats/:id', async (req, res) => {
     let chunk_index = 0;
 
     try {
-        for await (let chunk of response.body) {
-            chunk = chunk.toString()
-            if (++chunk_index % 30 == 0) {
-                // print debugger info every 20 chunks.
-                console.log("chunk:", chunk_index, "\n", chunk);
-            }
+        let chunk_real = '';
+        for await (let chunkOfBody of response.body) {
+            chunk_index++;
+            let chunk = chunkOfBody.toString().trim();
+            chunk_real += chunk;
 
-            if (chunk.startsWith("data: ")) {
-                let datas = chunk.split("data: ").filter(data => {
+
+            if (!chunk.endsWith("}") && !chunk.endsWith('[DONE]')) {
+                //说明不是JSON结尾
+                console.warn(`${chunk_index}:不是JSON结尾:${chunk_real}`);
+                continue;
+            }
+            //  else {
+            //     console.warn(`${chunk_index}:${chunk_real}`);
+            //     chunk_real = '';
+            //     continue;
+            // }
+
+
+            // if (++chunk_index % 30 == 0) {
+            // print debugger info every 20 chunks.
+            // console.log("chunk:", chunk_index, "\n", chunk);
+            // }
+
+            if (chunk_real.startsWith("data: ")) {
+                let datas = chunk_real.split("data: ").filter(data => {
                     return data.trim().length > 8;
                 }).map(data => {
-                    return JSON.parse(data.trim());
+                    try {
+                        return JSON.parse(data.trim());
+                    } catch (err) {
+                        // console.error("chunk:", chunk, err.message, err.stack);
+                        return {};
+                    }
                 });
 
                 for (let data of datas) {
+                    if (!data || !data.choices) {
+                        continue;
+                    }
                     let delta = { ...data.choices[0].delta };
                     if (delta && delta.content) {
                         assistant_chunked_resposne += delta.content;
@@ -250,6 +275,7 @@ app.post('/api/chats/:id', async (req, res) => {
                         res.write("data: " + JSON.stringify(record));
                     }
                 }
+                chunk_real = '';
             }
         }
         let updateRecord = { response: JSON.stringify({ assistant_chunked_resposne }) };
