@@ -3,7 +3,7 @@ version: '2'
 services:
   chat-server:
     container_name: chat-server
-    image: chrisptang/chatgpt-slim:0.0.1
+    image: chrisptang/chatgpt-slim:0.0.2
     restart: always
     ports:
       - 9000:5000
