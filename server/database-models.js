@@ -19,6 +19,18 @@ if ('true' === process.env.USE_SQLITE) {
     database = new Sequelize(pd_url);
 }
 
+const Configs = database.define('sys_configs', {
+    config_name: Sequelize.STRING(255),
+    config_value: Sequelize.TEXT
+}, {
+    paranoid: true,
+    indexes: [{
+        name: "idx_config_name",
+        unique: true,
+        fields: ["config_name"]
+    }]
+});
+
 
 const Chats = database.define('chat_records', {
     ref_id: Sequelize.BIGINT,
@@ -93,4 +105,4 @@ function sync_database(callback) {
     database.sync({ force: false, alter: true }).then(callback);
 }
 
-export { Chats, Dialogues, Users, sync_database }
+export { Chats, Dialogues, Users, Configs, sync_database }

@@ -13,6 +13,7 @@ COPY --from=builder /app/server/node_modules ./node_modules
 ADD server/database-models.js /app/server/database-models.js
 ADD server/user-operations.js /app/server/user-operations.js
 ADD server/openai-apis.js /app/server/server.js
+ADD server/config-operations.js /app/server/config-operations.js
 COPY --from=builder /app/server/package.json .
 
 ADD dist /app/frontend/

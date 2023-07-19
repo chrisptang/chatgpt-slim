@@ -5,6 +5,8 @@ import bodyParser from 'body-parser';
 import fetch from 'node-fetch';
 import { Chats, Dialogues, sync_database } from "./database-models.js"
 import { setupLoginWithGithub, AUTH_ALLOWED_PATHS } from "./user-operations.js"
+import { getConfig } from "./config-operations.js"
+import { setUpSysConfig } from './config-operations.js'
 import { createServer } from 'http';
 import HttpsProxyAgent from "https-proxy-agent";
 
@@ -22,19 +24,22 @@ app.use(bodyParser.urlencoded({ extended: false }));
 const static_path = process.env.SERVER_STATIC_PATH || '../dist';
 app.use(express.static(static_path))
 setupLoginWithGithub(app)
+setUpSysConfig(app);
 
 const DEFAUL_OPENAI_MODEL = process.env.DEFAUL_OPENAI_MODEL || "gpt-3.5-turbo-0301";
 
 console.log("about to start new chatgpt server with key:", (process.env.OPENAI_API_KEY || "0000000000").substring(0, 10));
 
 async function make_openai_request(path, data) {
+    let config = await getConfig();
+    console.log("calling openai apis with config:", JSON.stringify(config));
     const headers = {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Authorization": `Bearer ${config.OPENAI_API_KEY || process.env.OPENAI_API_KEY}`,
         "Content-Type": "application/json",
     };
     const postJson = { headers }
-    if (process.env.HTTP_PROXY) {
-        postJson.agent = new HttpsProxyAgent(process.env.HTTP_PROXY);
+    if (config.HTTP_PROXY || process.env.HTTP_PROXY) {
+        postJson.agent = new HttpsProxyAgent(config.HTTP_PROXY || process.env.HTTP_PROXY);
         console.log("using proxy:", postJson.agent);
     }
     let url = `https://api.openai.com/v1/${path}`
@@ -60,13 +65,6 @@ async function make_openai_request(path, data) {
     }
 }
 
-let test = await make_openai_request("models")
-console.log("available openai models:", test.data.map(model => {
-    let { id, owned_by, created } = { ...model };
-    created = new Date(created * 1000).toISOString().split(".")[0];
-    return { id, owned_by, created };
-}));
-
 const server = createServer(app);
 
 async function getLatestChatRecords(user, max_previous = 5, order = "DESC") {
@@ -91,7 +89,9 @@ function randomSeqId() {
 }
 
 app.post('/api/newChat', async (req, res) => {
-    let model = req.body.model || DEFAUL_OPENAI_MODEL;
+    let config = await getConfig();
+    console.log("calling openai apis with config:", JSON.stringify(config));    
+    let model = req.body.model || config.DEFAUL_OPENAI_MODEL || DEFAUL_OPENAI_MODEL;
     let propmt = req.body.propmt;
     let refer_previous = req.body.refer_previous || false;
     let max_previous = req.body.max_previous || 5;
@@ -210,7 +210,9 @@ app.post('/api/chats/:id', async (req, res) => {
     }
     propmt = propmt || record.propmt;
 
-    let model = req.body.model || DEFAUL_OPENAI_MODEL;
+    let config = await getConfig();
+    console.log("calling openai apis with config:", JSON.stringify(config));
+    let model = req.body.model || config.DEFAUL_OPENAI_MODEL || DEFAUL_OPENAI_MODEL;
     let data = {
         model: model,
         stream: true,
@@ -471,8 +473,14 @@ app.use((err, req, res, next) => {
     }
 });
 
-sync_database(() => {
+sync_database(async () => {
     app.listen(port, () => {
         console.log(`listening to port localhost:${port}`)
     })
+    let test = await make_openai_request("models")
+    console.log("available openai models:", test.data.map(model => {
+        let { id, owned_by, created } = { ...model };
+        created = new Date(created * 1000).toISOString().split(".")[0];
+        return { id, owned_by, created };
+    }));
 });

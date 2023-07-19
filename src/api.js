@@ -30,6 +30,12 @@ export default {
             return {};
         })
     },
+    listConfigs() {
+        return this.execute('get', "/config")
+    },
+    updateConfig(config_name, config_value) {
+        return this.execute('post', `/config/${config_name}?value=${config_value}`)
+    },
     listUserInfo() {
         return this.execute('get', "/me")
     },

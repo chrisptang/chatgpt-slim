@@ -142,7 +142,7 @@ p.chat-propmt {
   border-radius: 5px;
 }
 
-.new-chat .new-chat-btn {
+.new-chat-btn {
   padding: 5px 10px;
   background-color: hsla(160, 100%, 37%, 1);
   color: white;
@@ -151,16 +151,16 @@ p.chat-propmt {
   font-size: larger;
 }
 
-.new-chat .new-chat-btn:hover {
+.new-chat-btn:hover {
   background-color: hsla(160, 100%, 80%, 1);
   cursor: pointer;
 }
 
-.new-chat .new-chat-btn:active {
+.new-chat-btn:active {
   background-color: hsla(160, 100%, 60%, 1);
 }
 
-.new-chat .new-chat-btn:disabled {
+.new-chat-btn:disabled {
   background-color: lightgrey;
 }
 
