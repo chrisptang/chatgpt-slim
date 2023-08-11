@@ -11,7 +11,7 @@ if [ ${#env} -gt 15 ]; then
     fi
 fi
 
-export HOST_NAME=$(ifconfig | grep 192. | awk '{print $2}')
+export HOST_NAME=$(ifconfig | grep 192. |grep -v 255.| awk '{print $2}')
 # export HOST_NAME=$(hostname)
 printf "HOST_NAME:${HOST_NAME}\n\n"
 

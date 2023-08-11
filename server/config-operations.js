@@ -17,7 +17,7 @@ function setUpSysConfig(app) {
     app.post('/api/config/:config_name', async (req, res) => {
         let config_name = req.params.config_name,
             config_value = req.query.value;
-        let has_one = await Configs.findOne({ config_name });
+        let has_one = await Configs.findOne({ where: { config_name } });
         console.log("has_one:", JSON.stringify(has_one))
         if (has_one) {
             let config_name = req.params.config_name;
@@ -26,6 +26,8 @@ function setUpSysConfig(app) {
             await Configs.create({ config_value, config_name });
         }
         config[config_name] = config_value;
+        has_one = await Configs.findOne({ where: { config_name } });
+        res.json(has_one)
     });
 }
 
