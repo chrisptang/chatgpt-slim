@@ -30,6 +30,15 @@ const DEFAUL_OPENAI_MODEL = process.env.DEFAUL_OPENAI_MODEL || "gpt-3.5-turbo-03
 
 console.log("about to start new chatgpt server with key:", (process.env.OPENAI_API_KEY || "0000000000").substring(0, 10));
 
+function use_proxy_or_not(postJson, config) {
+    if ("true" === config.USE_PROXY && config.HTTP_PROXY) {
+        postJson.agent = new HttpsProxyAgent(config.HTTP_PROXY || process.env.HTTP_PROXY);
+        console.log("using proxy:", postJson.agent);
+    }
+
+    return postJson;
+}
+
 async function make_azure_openai_request(path, data) {
     let config = await getConfig();
     console.log("calling azure openai apis with config:", JSON.stringify(config));
@@ -38,10 +47,7 @@ async function make_azure_openai_request(path, data) {
         "Content-Type": "application/json",
     };
     const postJson = { headers }
-    if (config.HTTP_PROXY || process.env.HTTP_PROXY) {
-        postJson.agent = new HttpsProxyAgent(config.HTTP_PROXY || process.env.HTTP_PROXY);
-        console.log("using proxy:", postJson.agent);
-    }
+    use_proxy_or_not(postJson, config);
     //https://chrisptang-au-gpt.openai.azure.com/openai/deployments/chrisptang-gpt-35-turbo-16k/chat/completions?api-version=2023-05-15
     let url = `https://${config.AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments/${config.AZURE_DEPLOYMENT_NAME}/${path}?api-version=${config.AZURE_API_VERSION}`
     console.log("making request to:", url)
@@ -77,10 +83,7 @@ async function make_openai_request(path, data) {
         "Content-Type": "application/json",
     };
     const postJson = { headers }
-    if (config.HTTP_PROXY || process.env.HTTP_PROXY) {
-        postJson.agent = new HttpsProxyAgent(config.HTTP_PROXY || process.env.HTTP_PROXY);
-        console.log("using proxy:", postJson.agent);
-    }
+    use_proxy_or_not(postJson, config);
     let url = `https://api.openai.com/v1/${path}`
     console.log("making request to:", url)
     if (data) {
