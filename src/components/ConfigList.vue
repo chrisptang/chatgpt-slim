@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="config-view">
         <ul>
             <li v-for="conf in config_list" :key="conf.config_name" class="single-conf">
                 <b class="config-name">{{ conf.config_name }}</b>
@@ -26,7 +26,7 @@
 <script>
 import api from "@/api";
 export default {
-    name: 'UserInfo',
+    name: 'ConfigList',
     data() {
         return {
             config_list: [],
@@ -38,7 +38,7 @@ export default {
     },
     methods: {
         async update(name, value) {
-            await api.updateConfig(name, value);
+            await api.updateConfig(name.toUpperCase(), value);
             this.config_list = await api.listConfigs();
         },
         async create(name, value) {
@@ -49,9 +49,19 @@ export default {
 };
 </script>
 <style scoped>
+.config-view {
+    min-width: 70rem;
+}
+
+.config-view ul {
+    list-style: none;
+}
+
 .config-name {
     display: inline-block;
     min-width: 300px;
+    text-align: right;
+    padding-right: 20px;
 }
 
 .config-value {

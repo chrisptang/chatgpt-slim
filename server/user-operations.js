@@ -102,6 +102,32 @@ function setupLoginWithGithub(app) {
         res.json(user);
     });
 
+    app.get("/api/users", async (req, res) => {
+        let size = req.query.size || 50;
+        let user = req.user;
+        if (user && 'true' === user.is_admin) {
+            let users = await Users.findAll({ limit: size });
+            res.json(users);
+        } else {
+            res.json([]);
+        }
+    });
+
+    app.get("/api/users/:id", async (req, res) => {
+        let enable = req.query.enable || 'false';
+        let id = req.params.id
+        let user = req.user;
+        if (user && 'true' === user.is_admin) {
+            let user = await Users.findOne({ limit: size, where: { id } });
+            if (user) {
+                await Users.update({ enable }, { where: { id } });
+            }
+            res.json(user);
+        } else {
+            res.json({});
+        }
+    });
+
     app.get('/auth/github/callback', async (req, res) => {
         try {
             let code = req.query.code;

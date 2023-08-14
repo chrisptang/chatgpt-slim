@@ -39,6 +39,9 @@ export default {
     listUserInfo() {
         return this.execute('get', "/me")
     },
+    listUsers(size = 50) {
+        return this.execute('get', `/users?size=${size}`)
+    },
     listChats(chat_count = 5) {
         return this.execute('get', `/chats?size=${chat_count}`)
     },

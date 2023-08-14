@@ -61,7 +61,7 @@ import DarkModeToggle from './components/DarkModeToggle.vue';
 .header-links {
   display: flex;
   justify-content: space-evenly;
-  min-width: 200px;
+  min-width: 240px;
 }
 
 .greetings h1 {

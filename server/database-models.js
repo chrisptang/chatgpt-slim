@@ -59,6 +59,8 @@ const Users = database.define('users', {
     email: Sequelize.STRING(255),
     name: Sequelize.STRING(255),
     login: Sequelize.STRING(255),
+    is_admin: Sequelize.STRING(32),
+    enable: Sequelize.STRING(32),
     access_token: Sequelize.TEXT,
     api_response: Sequelize.TEXT
 }, {
@@ -73,13 +75,6 @@ const Users = database.define('users', {
         fields: ["login"]
     }]
 });
-
-// Dialogues messages=[
-//     {"role": "system", "content": "You are a helpful assistant."},
-//     {"role": "user", "content": "Who won the world series in 2020?"},
-//     {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
-//     {"role": "user", "content": "Where was it played?"}
-// ]
 
 const Dialogues = database.define('dialogues', {
     title: Sequelize.STRING(512),
