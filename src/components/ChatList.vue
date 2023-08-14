@@ -123,8 +123,8 @@ export default {
             }
             let chat = response;
             if (typeof chat === "string") { chat = JSON.parse(chat); }
-            if (!chat.choices && !chat.assistant_chunked_resposne) {
-                chat.assistant_chunked_resposne = "<empty>";
+            if (!chat.choices && !chat.assistant_chunked_response) {
+                chat.assistant_chunked_response = "<empty>";
             }
             chat.propmt = propmt;
             chat.id = id
@@ -179,7 +179,7 @@ export default {
                     </div>
                     </p>
                     <p class="chat-response"
-                        v-html="window._renderMD(chat.assistant_chunked_resposne || chat.choices[0].message.content, true)">
+                        v-html="window._renderMD(chat.assistant_chunked_response || chat.choices[0].message.content, true)">
                     </p>
                 </li>
             </ul>

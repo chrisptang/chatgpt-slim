@@ -130,66 +130,6 @@ function randomSeqId() {
     return parseInt(new Date().getTime() + "" + Math.floor(Math.random() * 999 + 1000));
 }
 
-app.post('/api/newChat', async (req, res) => {
-    let config = await getConfig();
-    console.log("calling openai apis with config:", JSON.stringify(config));
-    let model = req.body.model || config.DEFAUL_OPENAI_MODEL || DEFAUL_OPENAI_MODEL;
-    let propmt = req.body.propmt;
-    let refer_previous = req.body.refer_previous || false;
-    let max_previous = req.body.max_previous || 5;
-    if (!propmt || propmt.length <= 5) {
-        console.warn("invalid propmt:", propmt);
-        res.status = 400;
-        res.write("invalid propmt:" + propmt);
-        res.end();
-        return;
-    }
-
-    let data = {
-        model: model,
-        messages: [{ role: "user", content: propmt }]
-    }
-    if (refer_previous) {
-        let user = req.user.login
-        await appendPreviousChat(user, data, max_previous);
-        console.log("added previous chats:", data);
-    }
-    console.log("starting chat with:", data);
-    const completion = await make_openai_request("chat/completions", data);
-    if (!completion || !completion.choices || completion.choices.length <= 0) {
-        console.warn("invalid response from openai:", completion, "\nrequest:", data);
-        res.status = 500;
-        res.end();
-        return;
-    }
-    let completionStr = JSON.stringify(completion, null, 4);
-    console.log(completionStr);
-    let dbItem = {
-        ref_id: randomSeqId(),
-        propmt: propmt,
-        response: completionStr,
-        create_time: new Date(),
-        user: req.user.login
-    };
-    await Chats.create(dbItem);
-    completion.propmt = propmt;
-    res.json(completion)
-});
-
-async function appendPreviousChat(user, data, max_previous = 5) {
-    let records = await getLatestChatRecords(user, max_previous);
-    console.log("refering records:", records);
-    if (records && records.length > 0) {
-        records.forEach(chat => {
-            data.messages = data.messages.concat(JSON.parse(chat.response).choices[0].message);
-            data.messages = data.messages.concat({ role: "user", content: chat.propmt });
-            return 0;
-        });
-        data.messages = data.messages.reverse();
-        console.log("data.messages:", data.messages, "\nrecords:", records);
-    }
-}
-
 app.get('/api/chats', async (req, res) => {
     let size = req.query.size || 10;
     let user = req.user.login;
@@ -240,6 +180,48 @@ const chunk_header = {
     'Access-Control-Allow-Credentials': true,
 };
 
+async function processChunkedResponse(response, callback) {
+    let chunk_index = 0;
+    let chunk_real = '', assistant_chunked_response = '';
+    for await (let chunkOfBody of response.body) {
+        chunk_index++;
+        let chunk = chunkOfBody.toString().trim();
+        chunk_real += chunk;
+
+
+        if (!chunk.endsWith("}") && !chunk.endsWith('[DONE]')) {
+            //说明不是JSON结尾
+            console.warn(`${chunk_index}:不是JSON结尾:${chunk_real}`);
+            continue;
+        }
+
+        if (chunk_real.startsWith("data: ")) {
+            let datas = chunk_real.split("data: ").filter(data => {
+                return data.trim().length > 8;
+            }).map(data => {
+                try {
+                    return JSON.parse(data.trim());
+                } catch (err) {
+                    // console.error("chunk:", chunk, err.message, err.stack);
+                    return {};
+                }
+            });
+
+            for (let data of datas) {
+                if (!data || !data.choices) {
+                    continue;
+                }
+                let delta = { ...data.choices[0].delta };
+                if (delta && delta.content) {
+                    assistant_chunked_response += delta.content;
+                    callback(assistant_chunked_response);
+                }
+            }
+            chunk_real = '';
+        }
+    }
+}
+
 //complete this chat:
 app.post('/api/chats/:id', async (req, res) => {
     let id = req.params.id, user = req.user.login;
@@ -267,62 +249,16 @@ app.post('/api/chats/:id', async (req, res) => {
     res.header(chunk_header);
 
     const response = await make_openai_request("chat/completions", data);
-    let assistant_chunked_resposne = "";
-
-    let chunk_index = 0;
-
     try {
-        let chunk_real = '';
-        for await (let chunkOfBody of response.body) {
-            chunk_index++;
-            let chunk = chunkOfBody.toString().trim();
-            chunk_real += chunk;
+        let assistant_chunked_response = '';
+        await processChunkedResponse(response, function (new_chunk) {
+            console.log("new_chunk", new_chunk);
+            record.response = { assistant_chunked_response: new_chunk }
+            assistant_chunked_response = new_chunk;
+            res.write("data: " + JSON.stringify(record));
+        });
 
-
-            if (!chunk.endsWith("}") && !chunk.endsWith('[DONE]')) {
-                //说明不是JSON结尾
-                console.warn(`${chunk_index}:不是JSON结尾:${chunk_real}`);
-                continue;
-            }
-            //  else {
-            //     console.warn(`${chunk_index}:${chunk_real}`);
-            //     chunk_real = '';
-            //     continue;
-            // }
-
-
-            // if (++chunk_index % 30 == 0) {
-            // print debugger info every 20 chunks.
-            // console.log("chunk:", chunk_index, "\n", chunk);
-            // }
-
-            if (chunk_real.startsWith("data: ")) {
-                let datas = chunk_real.split("data: ").filter(data => {
-                    return data.trim().length > 8;
-                }).map(data => {
-                    try {
-                        return JSON.parse(data.trim());
-                    } catch (err) {
-                        // console.error("chunk:", chunk, err.message, err.stack);
-                        return {};
-                    }
-                });
-
-                for (let data of datas) {
-                    if (!data || !data.choices) {
-                        continue;
-                    }
-                    let delta = { ...data.choices[0].delta };
-                    if (delta && delta.content) {
-                        assistant_chunked_resposne += delta.content;
-                        record.response = { assistant_chunked_resposne }
-                        res.write("data: " + JSON.stringify(record));
-                    }
-                }
-                chunk_real = '';
-            }
-        }
-        let updateRecord = { response: JSON.stringify({ assistant_chunked_resposne }) };
+        let updateRecord = { response: JSON.stringify({ assistant_chunked_response }) };
         await Chats.update(updateRecord, { where: { id } });
         record = await Chats.findOne({ where: { id, user } });
         record.response = JSON.parse(record.response);
@@ -451,35 +387,15 @@ app.post('/api/chunked/dialogues', async (req, res) => {
     res.header(chunk_header);
 
     const response = await make_openai_request("chat/completions", data);
-    let assistant_chunked_resposne = "", chunk_message = { role: "assistant", content: "" };
+    let assistant_chunked_response = "", chunk_message = { role: "assistant", content: "" };
     messages = messages.concat(chunk_message);
 
     try {
-        for await (let chunk of response.body) {
-            chunk = chunk.toString()
-            if (++chunk_index % 30 == 0) {
-                // print debugger info every 20 chunks.
-                console.log("chunk:", chunk_index, "\n", chunk);
-            }
-
-            if (chunk.startsWith("data: ")) {
-                let datas = chunk.split("data: ").filter(data => {
-                    return data.trim().length > 8;
-                }).map(data => {
-                    return JSON.parse(data.trim());
-                });
-
-                for (let data of datas) {
-                    let delta = { ...data.choices[0].delta };
-                    if (delta && delta.content) {
-                        assistant_chunked_resposne += delta.content;
-                        chunk_message.content = assistant_chunked_resposne;
-                        record.messages = messages;
-                        res.write("data: " + JSON.stringify(record));
-                    }
-                }
-            }
-        }
+        await processChunkedResponse(response, function (new_chunk) {
+            chunk_message.content = new_chunk;
+            record.messages = messages;
+            res.write("data: " + JSON.stringify(record));
+        });
         let updateRecord = { messages: JSON.stringify(messages) };
         await Dialogues.update(updateRecord, { where: { id } });
         record = await Dialogues.findOne({ where: { id } });
@@ -518,11 +434,5 @@ app.use((err, req, res, next) => {
 sync_database(async () => {
     app.listen(port, () => {
         console.log(`listening to port localhost:${port}`)
-    })
-    // let test = await make_openai_request("models")
-    // console.log("available openai models:", test.data.map(model => {
-    //     let { id, owned_by, created } = { ...model };
-    //     created = new Date(created * 1000).toISOString().split(".")[0];
-    //     return { id, owned_by, created };
-    // }));
+    });
 });

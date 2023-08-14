@@ -11,7 +11,7 @@ const new_dialogue_obj = JSON.stringify({
         "content": "Type anything to start dialogue"
     }, {
         "role": "assistant",
-        "content": "ChatGPT will resposne here."
+        "content": "ChatGPT will response here."
     }]
 });
 

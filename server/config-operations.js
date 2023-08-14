@@ -4,7 +4,13 @@ const DEFAUL_OPENAI_MODEL = process.env.DEFAUL_OPENAI_MODEL || "gpt-3.5-turbo-03
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const HTTP_PROXY = process.env.HTTP_PROXY;
 
-let config = { DEFAUL_OPENAI_MODEL, OPENAI_API_KEY, HTTP_PROXY };
+const USE_PROXY = process.env.USE_PROXY || 'true';
+const USE_AZURE = process.env.USE_AZURE || 'false';
+const AZURE_RESROUCE_NAME = process.env.AZURE_RESROUCE_NAME || '';
+const AZURE_DEPLOYMENT_NAME = process.env.AZURE_DEPLOYMENT_NAME || '';
+const AZURE_API_VERSION = process.env.AZURE_API_VERSION || '2023-05-15';
+
+let config = { DEFAUL_OPENAI_MODEL, OPENAI_API_KEY, HTTP_PROXY, USE_AZURE, USE_PROXY, AZURE_API_VERSION, AZURE_DEPLOYMENT_NAME, AZURE_RESROUCE_NAME };
 console.log("system default config list:", JSON.stringify(config));
 let init = false;
 
@@ -27,6 +33,7 @@ function setUpSysConfig(app) {
         }
         config[config_name] = config_value;
         has_one = await Configs.findOne({ where: { config_name } });
+        config = await initConfigFromDb();
         res.json(has_one)
     });
 }
@@ -45,12 +52,7 @@ async function initConfig() {
     }
 }
 
-async function getConfig() {
-    if (!init) {
-        await initConfig();
-        init = true;
-    }
-
+async function initConfigFromDb() {
     let config_list = await Configs.findAll();
     let config_from_db = {};
     for (let conf of config_list) {
@@ -62,6 +64,17 @@ async function getConfig() {
 
     console.log("config_from_db:", JSON.stringify(config_from_db));
     return config_from_db;
+}
+
+async function getConfig() {
+    if (!init) {
+        await initConfig();
+        init = true;
+
+        config = await initConfigFromDb();
+    }
+
+    return config;
 }
 
 export { setUpSysConfig, getConfig }
