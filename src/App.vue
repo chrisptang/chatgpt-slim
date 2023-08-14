@@ -11,7 +11,7 @@ import DarkModeToggle from './components/DarkModeToggle.vue';
   <div>
     <div class="header sticky-header">
       <div class="greetings">
-        <h1 class="green">{{ "Chat with OpenAI GPT-3.5" }}</h1>
+        <h1 class="green">{{ "Chat with GPT-3.5" }}</h1>
       </div>
       <div class="header-links">
         <div class="route-item" v-for="route in routers">
@@ -46,7 +46,9 @@ import DarkModeToggle from './components/DarkModeToggle.vue';
 
 .view-container {
   margin-top: calc(4.5rem);
-  min-width: 100rem;
+  display: flex;
+  padding: 0;
+  /* min-width: calc(100rem - var(--section-gap) / 4); */
 }
 
 .user-info {
