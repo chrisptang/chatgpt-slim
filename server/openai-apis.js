@@ -252,7 +252,6 @@ app.post('/api/chats/:id', async (req, res) => {
     try {
         let assistant_chunked_response = '';
         await processChunkedResponse(response, function (new_chunk) {
-            console.log("new_chunk", new_chunk);
             record.response = { assistant_chunked_response: new_chunk }
             assistant_chunked_response = new_chunk;
             res.write("data: " + JSON.stringify(record));
