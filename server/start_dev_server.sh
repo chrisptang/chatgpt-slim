@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export HOST_NAME=`ifconfig | grep 192. | awk '{print $2}'`
+export HOST_NAME=`ifconfig | grep 192. |grep -v 255. | awk '{print $2}'`
 echo "HOST_NAME:$HOST_NAME"
 
 export HTTP_PROXY="http://${HOST_NAME}:8001"
