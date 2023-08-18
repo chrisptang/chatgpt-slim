@@ -71,6 +71,9 @@ export default {
     updateDialogue(dialogue) {
         return this.execute('post', `/dialogues/${dialogue.id}`, dialogue)
     },
+    renameDialogueWithGPT(id) {
+        return this.execute('post', `/dialogues/${id}/rename`)
+    },
     createDialogue(propmt) {
         //for existing dialogue: {id:123, messages:[{role:'user', content:'how are you'},{role:'assistant',content:'Hi, Iam ChatGPT!'}]}
         //for new dialogue: {messages:[{role:'user', content:'how are you'}]}

@@ -62,8 +62,9 @@ async function make_azure_openai_request(path, data) {
             return resposne;
         }
         if (resposne.status != 200) {
-            console.error("error code:", resposne.status, await resposne.text());
-            return {};
+            let text = await resposne.text();
+            console.error("error code:", resposne.status, text);
+            return { error: true, code: resposne.status, body: text };
         }
         return await resposne.json();
     } catch (err) {
@@ -97,8 +98,9 @@ async function make_openai_request(path, data) {
             return resposne;
         }
         if (resposne.status != 200) {
-            console.error("error code:", resposne.status, await resposne.text());
-            return {};
+            let text = await resposne.text();
+            console.error("error code:", resposne.status, text);
+            return { error: true, code: resposne.status, body: text };
         }
         return await resposne.json();
     } catch (err) {
@@ -299,6 +301,45 @@ app.delete('/api/dialogues/:id', async (req, res) => {
     res.json({ deleted: id });
 });
 
+//rename dialogue with response from GPT
+app.post('/api/dialogues/:id/rename', async (req, res) => {
+    let id = req.params.id
+    let user = req.user.login;
+    let record = await Dialogues.findOne({ where: { id, user } });
+    if (!record) {
+        res.status = 404;
+        res.end();
+        return;
+    }
+    console.log("renaming dialogue with GPT:", id);
+
+    let messages = JSON.parse(record.messages).concat({ role: "user", content: "name our conversation within 10 words" });
+
+    let model = req.body.model || DEFAUL_OPENAI_MODEL,
+        data = {
+            model: model,
+            messages
+        }
+
+    data.stream = false;
+
+    const response = await make_openai_request("chat/completions", data);
+    if (!response || response.error) {
+        res.status(response.code);
+        res.json(response);
+        return;
+    }
+    let title = response.choices[0].message.content;
+    title = title.replace(/^"|"$/g, '');
+    let updateRecord = { title };
+    console.log("updateRecord", updateRecord, "response:", response);
+    if (updateRecord.title && updateRecord.title.length > 0) {
+        await Dialogues.update(updateRecord, { where: { id } });
+        record = await Dialogues.findOne({ where: { id } })
+    }
+    res.json(record);
+});
+
 //update dialogue, typical for title renaming.
 app.post('/api/dialogues/:id', async (req, res) => {
     let id = req.params.id
@@ -347,7 +388,7 @@ app.post('/api/dialogues', async (req, res) => {
     let messages = [{ role: 'user', content: propmt }];
 
     console.log("about to start new dialogue:", messages);
-    let record = { user, title: "Dialogue at " + new Date().toISOString(), messages: JSON.stringify(messages) };
+    let record = { user, title: "Dialogue at " + new Date().toLocaleString(), messages: JSON.stringify(messages) };
     record = await Dialogues.create(record);
     console.log("new dialogue:", record);
 
@@ -381,12 +422,10 @@ app.post('/api/chunked/dialogues', async (req, res) => {
     }
 
     data.stream = true;
-    let chunk_index = 0;
-
     res.header(chunk_header);
 
     const response = await make_openai_request("chat/completions", data);
-    let assistant_chunked_response = "", chunk_message = { role: "assistant", content: "" };
+    let chunk_message = { role: "assistant", content: "" };
     messages = messages.concat(chunk_message);
 
     try {

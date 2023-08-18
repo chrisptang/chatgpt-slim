@@ -157,6 +157,14 @@ export default {
             await this.listDialogues();
             await this.switchDialogue(0);
         },
+        async renameDialogueWithGPT() {
+            this.startCounting();
+            let updatedDialogue = await api.renameDialogueWithGPT(this.working_dialogue_id);
+            if (updatedDialogue && updatedDialogue.title) {
+                this.working_dialogue.title = updatedDialogue.title;
+            }
+            this.endCounting();
+        },
         converDialogue(record) {
             if (!record) {
                 return record;
@@ -256,6 +264,9 @@ export default {
                         class="new-chat-btn">chat</button>
                     <button style="margin-left: 10px;" value="savePdf" @click="savePdf()" :disabled="loading"
                         class="new-chat-btn">save to pdf</button>
+                    <button style="margin-left: 10px;" value="savePdf" @click="renameDialogueWithGPT()" :disabled="loading"
+                        class="new-chat-btn">rename dialogue</button>
+
                 </p>
                 <p style="min-height: 30px;">
                     <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
