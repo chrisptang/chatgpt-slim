@@ -176,9 +176,25 @@ p.chat-propmt {
     place-items: center;
   }
 
+  #app .header-links {
+    justify-content: start;
+    padding-left: 1vw;
+  }
+
+  #app .header-links .route-item {
+    padding-right: 1vw;
+  }
+
   #app {
     grid-template-columns: 1fr 1fr;
     padding: 0 2rem;
+  }
+
+  .view-container .chat-propmt,
+  .view-container .chat-response {
+    width: 96vw;
+    padding: 1vh 0.5vw;
+    word-wrap: break-word;
   }
 }
 

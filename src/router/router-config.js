@@ -7,7 +7,7 @@ const routes = [
     { path: '/', component: ChatView, name: 'Home', isActive: true },
     { path: '/dialogues', component: DialoguesView, name: 'Dialogues', isActive: false },
     { path: '/config', component: ConfigView, name: 'Configs', isActive: false },
-    // { path: '/users', component: UsersView, name: 'Users', isActive: false }
+    { path: '/users', component: UsersView, name: 'Users', isActive: false }
 ];
 
 export default routes;

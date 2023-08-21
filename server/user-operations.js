@@ -42,13 +42,17 @@ function setupLoginWithGithub(app) {
 
     app.use(cookieParser());
 
-    function return401(res, message = null) {
+    function returnWithErrorCode(res, code = 401, message = null) {
         if (!res.headersSent) {
             console.log("github_login:", github_login)
-            res.status(401).send(message ? message : JSON.stringify({ login: github_login }));
+            res.status(code).send(message ? message : JSON.stringify({ login: github_login }));
             res.end();
         }
         return;
+    }
+
+    function return401(res, message = null) {
+        return returnWithErrorCode(res, 401, message);
     }
 
     // auth check middleware:
@@ -68,7 +72,20 @@ function setupLoginWithGithub(app) {
             } else {
                 let user = await Users.findOne({ where: { access_token: token } });
                 if (user) {
-                    req.user = JSON.parse(user.api_response);
+                    user = user.toJSON();
+                    if (!user.enable || 'true' != user.enable) {
+                        // user is not enabled
+                        console.error("user not enabled:", user);
+                        return returnWithErrorCode(res, 403, "your not allowed");
+                    }
+                    // console.log("user from db:", JSON.stringify(user), typeof JSON.parse(user.api_response), user.is_admin, 'true' == user.is_admin);
+                    let req_user = JSON.parse(user.api_response);
+                    let { is_admin, enable } = { ...user }
+                    console.log("is_admin,enable", is_admin, enable, typeof req_user)
+                    req_user.is_admin = 'true'
+                    req_user.enable = user.enable
+                    req.user = req_user;
+                    // req.user.enable = user.enable
                 } else {
                     console.error("can not find user for token:", token, "forcing user to relogin");
                     res.clearCookie("token");
@@ -78,7 +95,7 @@ function setupLoginWithGithub(app) {
             if (typeof req.user === "string") {
                 req.user = JSON.parse(req.user);
             }
-            console.log("user:", typeof req.user, req.user);
+            // console.log("user:", typeof req.user, req.user);
             next();
         } catch (err) {
             console.log("handle request failed:", req.url, err.message, err.stack)
@@ -105,6 +122,7 @@ function setupLoginWithGithub(app) {
     app.get("/api/users", async (req, res) => {
         let size = req.query.size || 50;
         let user = req.user;
+        console.log("user.is_admin", user.is_admin);
         if (user && 'true' === user.is_admin) {
             let users = await Users.findAll({ limit: size });
             res.json(users);
@@ -170,7 +188,7 @@ function setupLoginWithGithub(app) {
             if (!user) {
                 user = await Users.create({ email, name, login, access_token, api_response });
             } else {
-                await Users.update({ name, access_token, api_response: JSON.stringify(api_response) }, { where: { login } });
+                await Users.update({ name, access_token, api_response }, { where: { login } });
             }
             console.log("send access_token:", access_token)
             res.cookie("token", access_token, { httpOnly: true, maxAge: 1000 * 3600 * 24 * 30 });

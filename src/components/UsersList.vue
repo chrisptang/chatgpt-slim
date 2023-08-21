@@ -1,7 +1,7 @@
 <template>
     <div class="config-view">
-        <table>
-            <thead>
+        <table class="table table-striped table-bordered">
+            <thead class="thead-light">
                 <tr>
                     <th>Id</th>
                     <th>Name</th>
@@ -18,8 +18,8 @@
                     <td>{{ user.login }}</td>
                     <td>{{ user.is_admin }}</td>
                     <td>{{ user.enable }}</td>
-                    <td> <button class="save-config new-chat-btn" @click="enableUser(user.id, user.enable)">
-                            <span v-text="user.enable == 'true' ? 'Disable' : 'Enable'"></span>
+                    <td> <button class="new-chat-btn" @click="enableUser(user.id, user.enable)">
+                            <span v-text="user.enable == 'true' && user.is_admin != 'true' ? 'Disable' : 'Enable'"></span>
                         </button></td>
                 </tr>
             </tbody>
@@ -30,7 +30,7 @@
 <script>
 import api from "@/api";
 export default {
-    name: 'UserInfo',
+    name: 'UserListView',
     data() {
         return {
             user_list: []
@@ -41,7 +41,7 @@ export default {
     },
     methods: {
         async enableUser(id, enable) {
-            
+
         }
     }
 };

@@ -60,8 +60,8 @@ import DarkModeToggle from './components/DarkModeToggle.vue';
 
 .header-links {
   display: flex;
-  justify-content: space-evenly;
-  min-width: 240px;
+  justify-content: start;
+  /* min-width: 240px; */
 }
 
 .greetings h1 {
@@ -128,6 +128,8 @@ nav a:first-of-type {
 }
 
 @media (min-width: 1024px) {
+
+  
 
   .greetings h1,
   .greetings h3 {
