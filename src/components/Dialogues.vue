@@ -359,14 +359,14 @@ p.chat-propmt {
 
     .dialogue-container .chat-propmt,
     .dialogue-container .chat-response {
-        width: 15.5vw;
-        padding: 1vh 0.5vw;
+        width: 100%;
+        padding: 1.5vh 0.5vw;
         word-wrap: break-word;
     }
 
     .dialogue-container .dialogue-detail .chat-propmt,
     .dialogue-container .dialogue-detail .chat-response {
-        width: 78vw;
+        width: 100%;
     }
 
     .greetings h1,
