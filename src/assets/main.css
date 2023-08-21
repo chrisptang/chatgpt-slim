@@ -187,7 +187,7 @@ p.chat-propmt {
 
   #app {
     grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+    padding: 0 0rem;
   }
 
   .view-container .chat-propmt,
@@ -195,6 +195,7 @@ p.chat-propmt {
     width: 96vw;
     padding: 1vh 0.5vw;
     word-wrap: break-word;
+    max-width: 1680px;
   }
 }
 
@@ -218,7 +219,7 @@ p.chat-propmt {
     padding: 0 1vw;
   }
 
-  #app .config-view ul{
+  #app .config-view ul {
     padding: 0;
   }
 
@@ -226,7 +227,7 @@ p.chat-propmt {
     text-align: left;
   }
 
-  #app .config-view .single-conf{
+  #app .config-view .single-conf {
     border-bottom: #e0e0e0 1px solid;
   }
 

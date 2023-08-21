@@ -248,7 +248,8 @@ export default {
                         <p :class="message.role == 'user' ? 'chat-propmt' : 'chat-response'"
                             v-html="message.role == 'user' ? message.content : window._renderMD(message.content, true)">
                         </p>
-                        <i v-if="message.role == 'user'" class="delete-icon delete-dialogue-message"
+                        <!-- v-if="message.role == 'user'" -->
+                        <i class="delete-icon delete-dialogue-message"
                             @click="deleteDialogueMessage(index)">
                             <img src="/delete.png" />
                         </i>
