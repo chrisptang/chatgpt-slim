@@ -185,7 +185,7 @@ export default {
             </ul>
         </div>
         <div class="new-chat" id="newChat">
-            <textarea placeholder="type anything you want to start conversation with GPT-3.5" id="prompt-textarea"
+            <textarea placeholder="ask GPT-3.5 anything" id="prompt-textarea"
                 @keydown.enter.exact.prevent="completeChatChunked"
                 type="textarea" v-model="prompt" class="new-chat-box" />
             <p>

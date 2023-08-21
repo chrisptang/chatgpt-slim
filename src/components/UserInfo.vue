@@ -2,7 +2,7 @@
     <div>
         <a :href="user.html_url" target="_blank">
             <img class="user-avatar" :src="user.avatar_url" />
-            <span>Hello, {{ user.login }}</span>
+            <span class="user-name-greeting">Hello, {{ user.login }}</span>
         </a>
     </div>
 </template>

@@ -111,7 +111,7 @@ h3 {
 p.chat-response {
   overflow-wrap: anywhere;
   padding: 5px 10px 5px 10px;
-  margin-left: 20px;
+  /* margin-left: 20px; */
 }
 
 p.chat-response,
@@ -129,7 +129,7 @@ p.chat-propmt {
   box-shadow: var(--color-user-message) 3px 3px 5px;
   margin-bottom: 10px;
   padding: 5px 80px 5px 10px;
-  margin-right: 20px;
+  /* margin-right: 20px; */
   color: var(--color-prompt-text);
 }
 
@@ -184,8 +184,59 @@ p.chat-propmt {
 
 @media (max-width: 1024px) {
   #app {
-    padding: 0 1rem;
+    padding: 0 0.5vw;
     min-height: 100vh;
+  }
+
+  #app .header-links {
+    justify-content: start;
+  }
+
+  #app .header-links .route-item {
+    padding-right: 2vw;
+  }
+
+  #app .config-view {
+    width: 96vw;
+    min-width: 96vw;
+    padding: 0 1vw;
+  }
+
+  #app .config-view ul{
+    padding: 0;
+  }
+
+  #app .config-view .config-name {
+    text-align: left;
+  }
+
+  #app .config-view .single-conf{
+    border-bottom: #e0e0e0 1px solid;
+  }
+
+  #app .header {
+    padding: 0 1vw;
+  }
+
+  #app .header .user-name-greeting {
+    display: none;
+  }
+
+  #app .user-info {
+    top: 0.7vh;
+    bottom: auto;
+    right: 2vw;
+  }
+
+  .view-container {
+    width: 100vw;
+  }
+
+  .view-container .chat-propmt,
+  .view-container .chat-response {
+    width: 98vw;
+    padding: 0 0.5vw;
+    overflow-x: auto;
   }
 
   .dialogue-list {
@@ -217,6 +268,10 @@ p.chat-propmt {
     background-color: #222;
     box-shadow: #111 0 5px 5px;
     color: #fff;
+  }
+
+  p.chat-response {
+    color: lightgray;
   }
 
   .new-chat .new-chat-box {
