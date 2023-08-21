@@ -48,7 +48,6 @@ import DarkModeToggle from './components/DarkModeToggle.vue';
   margin-top: calc(4.5rem);
   display: flex;
   padding: 0;
-  /* min-width: calc(100rem - var(--section-gap) / 4); */
 }
 
 .user-info {

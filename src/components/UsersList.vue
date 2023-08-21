@@ -1,5 +1,5 @@
 <template>
-    <div class="config-view">
+    <div class="user-list-view">
         <table class="table table-striped table-bordered">
             <thead class="thead-light">
                 <tr>
@@ -18,9 +18,15 @@
                     <td>{{ user.login }}</td>
                     <td>{{ user.is_admin }}</td>
                     <td>{{ user.enable }}</td>
-                    <td> <button class="new-chat-btn" @click="enableUser(user.id, user.enable)">
-                            <span v-text="user.enable == 'true' && user.is_admin != 'true' ? 'Disable' : 'Enable'"></span>
-                        </button></td>
+                    <td>
+                        <button :disabled="user.is_admin == 'true'" class="new-chat-btn"
+                            @click="enableUser(user.id, user.enable)">
+                            <span v-text="user.enable == 'true' ? 'Disable' : 'Enable'"></span>
+                        </button>
+                        <button :disabled="user.is_admin == 'true'" class="new-chat-btn" @click="setAdAdmin(user.id)">
+                            <span >Set as Admin</span>
+                        </button>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -47,35 +53,11 @@ export default {
 };
 </script>
 <style scoped>
-.config-view {
-    min-width: 70rem;
+.user-list-view {
+    min-width: 70vw;
 }
 
-.config-view ul {
-    list-style: none;
-}
-
-.config-name {
-    display: inline-block;
-    min-width: 300px;
-    text-align: right;
-    padding-right: 20px;
-}
-
-.config-value {
-    margin-left: 20px;
-    padding: 5px 20px;
-    margin: 5px 0;
-    min-width: 30vw;
-}
-
-.save-config {
-    display: none;
-    margin-left: 20px;
-}
-
-.single-conf:hover .save-config,
-.add-new-config:hover .save-config {
-    display: inline-block;
+.user-list-view .new-chat-btn{
+    margin-right: 1vw;
 }
 </style>

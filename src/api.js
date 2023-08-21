@@ -42,6 +42,9 @@ export default {
     listUsers(size = 50) {
         return this.execute('get', `/users?size=${size}`)
     },
+    enableUserOrAdmin(id = 0, enable = false, admin = false) {
+        return this.execute('post', `/users/${id}`, { enable, is_admin: admin })
+    },
     listChats(chat_count = 5) {
         return this.execute('get', `/chats?size=${chat_count}`)
     },

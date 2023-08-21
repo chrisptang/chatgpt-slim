@@ -131,18 +131,22 @@ function setupLoginWithGithub(app) {
         }
     });
 
-    app.get("/api/users/:id", async (req, res) => {
-        let enable = req.query.enable || 'false';
+    app.post("/api/users/:id", async (req, res) => {
+        let { enable, is_admin } = { ...req.body };
         let id = req.params.id
         let user = req.user;
         if (user && 'true' === user.is_admin) {
             let user = await Users.findOne({ limit: size, where: { id } });
             if (user) {
-                await Users.update({ enable }, { where: { id } });
+                let updateObj = { enable: `${enable}` }
+                if (is_admin) {
+                    updateObj.is_admin = `${is_admin}`
+                }
+                await Users.update(updateObj, { where: { id } });
             }
             res.json(user);
         } else {
-            res.json({});
+            return returnWithErrorCode(res, 403, "operation not allowed");
         }
     });
 
