@@ -216,7 +216,7 @@ export default {
 </script>
 
 <template>
-    <div class="dialogue-container">
+    <div id="dialogues" class="dialogue-container">
         <div class="dialogue-list custom-scrollbar" :hidden="isMobile()">
             <div @click="switchDialogue(0)" class="dialogue-title"
                 :class="working_dialogue_id == 0 ? 'dialogue-title selected-dialogue' : 'dialogue-title'">
@@ -356,6 +356,18 @@ p.chat-propmt {
 }
 
 @media (min-width: 1024px) {
+
+    .dialogue-container .chat-propmt,
+    .dialogue-container .chat-response {
+        width: 15.5vw;
+        padding: 1vh 0.5vw;
+        word-wrap: break-word;
+    }
+
+    .dialogue-container .dialogue-detail .chat-propmt,
+    .dialogue-container .dialogue-detail .chat-response {
+        width: 78vw;
+    }
 
     .greetings h1,
     .greetings h3 {
