@@ -28,9 +28,9 @@ async function fetchGithubApi(url, access_token = "", method = "get") {
         headers["Authorization"] = `Bearer ${access_token}`;
     }
     conf.headers = headers;
-    if (process.env.HTTP_PROXY && process.env.HTTP_PROXY.length > 10) {
+    if (process.env.HTTP_PROXY && process.env.HTTP_PROXY.length > 16) {
         conf.agent = new HttpsProxyAgent(process.env.HTTP_PROXY);
-        console.log("using proxy:", conf.agent);
+        console.log("using proxy:", process.env.HTTP_PROXY, conf.agent);
     }
 
     return await fetch(url, conf);
