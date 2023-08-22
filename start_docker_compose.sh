@@ -65,6 +65,7 @@ printf "...use_sqlite:${use_sqlite}"
 compose_file="docker-compose.yml"
 
 if [ "${use_sqlite}" = "y" ]; then
+    cat .env > .env2
     compose_file="docker-compose-sqlite.yml"
 fi
 
