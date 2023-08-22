@@ -36,7 +36,7 @@ if [ ${#client_id} -gt 5 ]; then
     export GITHUB_CLIENT_ID="${client_id}"
     read -p "...specify github app client secret then:" client_secret
     export GITHUB_CLIENT_SECRET="${client_secret}"
-    read -p "...specify github login callback host, default to be:localhost:9000, type enter to use default value callback host" callback
+    read -p "...specify github login callback host, default to be:localhost:9000, type enter to use default value callback host:" callback
     if [ ${#callback} -gt 5 ]; then
         export GITHUB_LOGIN_CALLBACK_HOST="${callback}"
     else
