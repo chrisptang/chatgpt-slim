@@ -206,10 +206,10 @@ export default {
 
             const doc = new jsPDF({ format: [width, height], compress: true });
 
-            const imgData = canvas.toDataURL('image/png');
+            const imgData = canvas.toDataURL('image/jpeg', 0.2);
             doc.addImage(imgData, 'PNG', 0, 0, width, height);
             this.endCounting();
-            doc.save(`dialogue_${this.working_dialogue_id}_${new Date().toISOString()}.pdf`);
+            doc.save(`${this.working_dialogue.title}_${new Date().toISOString()}.pdf`);
         }
     },
 };
@@ -249,8 +249,7 @@ export default {
                             v-html="message.role == 'user' ? message.content : window._renderMD(message.content, true)">
                         </p>
                         <!-- v-if="message.role == 'user'" -->
-                        <i class="delete-icon delete-dialogue-message"
-                            @click="deleteDialogueMessage(index)">
+                        <i class="delete-icon delete-dialogue-message" @click="deleteDialogueMessage(index)">
                             <img src="/delete.png" />
                         </i>
                     </li>
