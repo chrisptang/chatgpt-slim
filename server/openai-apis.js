@@ -216,9 +216,10 @@ async function processChunkedResponse(response, callback) {
                 let delta = { ...data.choices[0].delta };
                 if (delta && delta.content) {
                     assistant_chunked_response += delta.content;
-                    callback(assistant_chunked_response);
+                    // callback(assistant_chunked_response);
                 }
             }
+            callback(assistant_chunked_response);
             chunk_real = '';
         }
     }
