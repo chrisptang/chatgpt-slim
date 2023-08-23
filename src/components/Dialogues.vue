@@ -112,6 +112,11 @@ export default {
                     console.log("finished:", dialogue);
                     return;
                 }
+                //如果未j结束
+                if (!!dialogue.messageIndex && dialogue.messageIndex > 0) {
+                    this.working_dialogue.messages[dialogue.messageIndex] = dialogue;
+                    return;
+                }
                 this.working_dialogue = dialogue;
                 for (let index in this.dialogues) {
                     if (this.dialogues[index].id == dialogue.id) {

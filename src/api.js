@@ -117,12 +117,14 @@ export default {
                         return JSON.parse(data.trim());
                     });
 
-                    for (let data of datas) {
-                        if (++chunk_index % 50 == 0) {
-                            console.log("new arriving data:", chunk_index, data);
-                        }
-                        await callback(data);
-                    }
+                    // 其实只需要执行一次
+                    // for (let data of datas) {
+                    //     if (++chunk_index % 50 == 0) {
+                    //         console.log("new arriving data:", chunk_index, data);
+                    //     }
+                    //     await callback(data);
+                    // }
+                    await callback(datas[datas.length - 1])
                 }
             } catch (err) {
                 console.error("unable to handle chunk:\n", chunk, err);

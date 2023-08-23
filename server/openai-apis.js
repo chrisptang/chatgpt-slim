@@ -433,7 +433,7 @@ app.post('/api/chunked/dialogues', async (req, res) => {
         await processChunkedResponse(response, function (new_chunk) {
             chunk_message.content = new_chunk;
             record.messages = messages;
-            res.write("data: " + JSON.stringify(record));
+            res.write("data: " + JSON.stringify({ id, messageIndex: messages.length - 1, role: "assistant", content: new_chunk }));
         });
         let updateRecord = { messages: JSON.stringify(messages) };
         await Dialogues.update(updateRecord, { where: { id } });
