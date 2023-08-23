@@ -6,11 +6,12 @@ const HTTP_PROXY = process.env.HTTP_PROXY;
 
 const USE_PROXY = process.env.USE_PROXY || 'true';
 const USE_AZURE = process.env.USE_AZURE || 'false';
-const AZURE_RESROUCE_NAME = process.env.AZURE_RESROUCE_NAME || '';
+const AZURE_RESOURCE_NAME = process.env.AZURE_RESOURCE_NAME || '';
 const AZURE_DEPLOYMENT_NAME = process.env.AZURE_DEPLOYMENT_NAME || '';
 const AZURE_API_VERSION = process.env.AZURE_API_VERSION || '2023-05-15';
+const AZURE_API_KEY = process.env.AZURE_API_KEY || '';
 
-let config = { DEFAUL_OPENAI_MODEL, OPENAI_API_KEY, HTTP_PROXY, USE_AZURE, USE_PROXY, AZURE_API_VERSION, AZURE_DEPLOYMENT_NAME, AZURE_RESROUCE_NAME };
+let config = { DEFAUL_OPENAI_MODEL, OPENAI_API_KEY, HTTP_PROXY, USE_AZURE, USE_PROXY, AZURE_API_VERSION, AZURE_DEPLOYMENT_NAME, AZURE_RESOURCE_NAME, AZURE_API_KEY };
 console.log("system default config list:", JSON.stringify(config));
 let init = false;
 
