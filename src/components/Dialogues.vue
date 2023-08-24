@@ -293,7 +293,7 @@ p.chat-propmt {
 .single-chat:hover .delete-icon {
     display: inline;
     position: absolute;
-    right: 10px;
+    right: 2vw;
     top: 4px;
     cursor: pointer;
     padding: 0;
