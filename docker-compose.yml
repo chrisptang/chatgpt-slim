@@ -23,18 +23,10 @@ services:
     container_name: db-postgres
     image: postgres:10
     restart: always
-    # ports:
-    #   - "5432:5432"
+    ports:
+      - "$EXPOSE_POSTGRES"
     volumes:
       - ./pg-data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: postgres-local
       POSTGRES_DB: chatgpt
-
-  # adminer:
-  #   image: adminer:latest
-  #   container_name: adminer_chatgpt
-  #   depends_on:
-  #     - db-postgres
-  #   ports:
-  #     - 4088:8080

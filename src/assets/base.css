@@ -60,7 +60,7 @@
     --color-list-item: #666;
     --color-list-item-hovered: #6b6b6b;
     --color-list-item-selected: #8b8b8b;
-    --color-response: #686868;
+    --color-response: #444444;
     --color-prompt-text: #fff;
   }
 }
@@ -71,7 +71,7 @@
   --color-list-item-hovered: #6b6b6b;
   --color-list-item-selected: #8b8b8b;
   --color-background: var(--vt-c-black);
-  --color-response: lightgray;
+  --color-response: #444444;
   --color-prompt-text: #fff;
 }
 

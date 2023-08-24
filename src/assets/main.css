@@ -126,10 +126,9 @@ code {
 p.chat-propmt {
   white-space: pre-wrap;
   background-color: var(--color-user-message);
-  box-shadow: var(--color-user-message) 3px 3px 5px;
+  box-shadow: var(--color-user-message) 3px 3px 3px;
   margin-bottom: 10px;
-  padding: 5px 80px 5px 10px;
-  /* margin-right: 20px; */
+  padding: 5px 10% 5px 10px;
   color: var(--color-prompt-text);
 }
 
@@ -173,7 +172,7 @@ p.chat-propmt {
 @media (min-width: 1024px) {
   body {
     display: flex;
-    place-items: center;
+    place-items: flex-start;
   }
 
   #app .header-links {
@@ -193,9 +192,16 @@ p.chat-propmt {
   .view-container .chat-propmt,
   .view-container .chat-response {
     width: 96vw;
-    padding: 1vh 0.5vw;
     word-wrap: break-word;
     max-width: 1680px;
+  }
+
+  .view-container .chat-response {
+    padding: 1vh 1vw;
+  }
+
+  .view-container .chat-propmt {
+    padding: 1vh 8vw 1vh 1vw;
   }
 }
 
@@ -274,7 +280,7 @@ p.chat-propmt {
   .chat-list-ul li.single-chat,
   .single-dialogue {
     color: #e0e0e0;
-    background: #444;
+    /* background: #444; */
   }
 
   .single-dialogue:hover .action-icon-group {
@@ -282,13 +288,13 @@ p.chat-propmt {
   }
 
   p.chat-propmt {
-    background-color: #222;
-    box-shadow: #111 0 5px 5px;
-    color: #fff;
+    background-color: var(--color-user-message);
+    box-shadow: var(--color-user-message) 3px 3px 3px;
+    color: var(--color-prompt-text);
   }
 
   p.chat-response {
-    color: lightgray;
+    color: var(--color-prompt-text);
   }
 
   .new-chat .new-chat-box {

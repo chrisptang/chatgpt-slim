@@ -205,6 +205,9 @@ export default {
 </template>
 
 <style scoped>
+.chat-list-container p.chat-propmt{
+    margin-bottom: 12px;
+}
 @media (max-width: 800px) {
     #app {
         padding: 0;

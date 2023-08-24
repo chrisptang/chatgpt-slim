@@ -47,12 +47,20 @@ else
     echo "...you choose to use this tool in no-auth mode."
 fi
 
-cat /dev/null >.env
-echo "OPENAI_API_KEY=$OPENAI_API_KEY" >.env
-echo "HTTP_PROXY=$HTTP_PROXY" >>.env
-echo "GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID" >>.env
-echo "GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET" >>.env
-echo "GITHUB_LOGIN_CALLBACK_HOST=$GITHUB_LOGIN_CALLBACK_HOST" >>.env
+expose_postgres="5432"
+read -p "expose local posgres? type 'y' to expose:" if_expose_postgres
+if [ ${#if_expose_postgres} -eq 'y' ]; then
+    expose_postgres="5432:5432"
+fi
+
+
+cat /dev/null > .env
+echo "OPENAI_API_KEY=$OPENAI_API_KEY" > .env
+echo "HTTP_PROXY=$HTTP_PROXY" >> .env
+echo "GITHUB_CLIENT_ID=$GITHUB_CLIENT_ID" >> .env
+echo "GITHUB_CLIENT_SECRET=$GITHUB_CLIENT_SECRET" >> .env
+echo "GITHUB_LOGIN_CALLBACK_HOST=$GITHUB_LOGIN_CALLBACK_HOST" >> .env
+echo "EXPOSE_POSTGRES=$EXPOSE_POSTGRES" >> .env
 
 printf "\nreview config:\n"
 cat .env
