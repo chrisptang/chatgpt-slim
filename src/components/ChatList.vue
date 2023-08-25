@@ -186,8 +186,7 @@ export default {
         </div>
         <div class="new-chat" id="newChat">
             <textarea placeholder="ask GPT-3.5 anything" id="prompt-textarea"
-                @keydown.enter.exact.prevent="completeChatChunked"
-                type="textarea" v-model="prompt" class="new-chat-box" />
+                @keydown.enter.exact.prevent="completeChatChunked" type="textarea" v-model="prompt" class="new-chat-box" />
             <p>
                 <button value="chat" @click="completeChatChunked()" :disabled="loading" class="new-chat-btn">chat</button>
                 <a style="margin-left: 20px;" href="/?count=2">Latest 2 chats</a>
@@ -205,12 +204,17 @@ export default {
 </template>
 
 <style scoped>
-.chat-list-container p.chat-propmt{
+#prompt-textarea {
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.3);
+    border-color: #cdcdcd;
+}
+
+.chat-list-container p.chat-propmt {
     margin-bottom: 12px;
     box-shadow: none;
 }
 
-.chat-list-ul li.single-chat{
+.chat-list-ul li.single-chat {
     border-radius: 5px;
     border: #e0e0e0 solid 1px;
     padding: 0.5rem;

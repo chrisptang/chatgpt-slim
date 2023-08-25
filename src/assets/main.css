@@ -207,6 +207,15 @@ p.chat-propmt {
 }
 
 @media (max-width: 1024px) {
+
+  /* mobile page */
+  .new-chat .new-chat-box {
+    width: 100%;
+    max-width: 99vw;
+    max-height: 50rem;
+    min-height: 5rem;
+  }
+
   #app {
     padding: 0 0.5vw;
     min-height: 100vh;
