@@ -102,6 +102,7 @@ h1 {
 
 .chat-list-ul li.single-chat .chat-response {
   background-color: var(--color-response);
+  color: var(--color-response-text);
 }
 
 h3 {

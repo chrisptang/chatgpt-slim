@@ -207,7 +207,16 @@ export default {
 <style scoped>
 .chat-list-container p.chat-propmt{
     margin-bottom: 12px;
+    box-shadow: none;
 }
+
+.chat-list-ul li.single-chat{
+    border-radius: 5px;
+    border: #e0e0e0 solid 1px;
+    padding: 0.5rem;
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.3);
+}
+
 @media (max-width: 800px) {
     #app {
         padding: 0;
