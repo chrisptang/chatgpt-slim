@@ -34,16 +34,24 @@ export default {
         };
     },
     async created() {
-        this.config_list = await api.listConfigs();
+        this.config_list = await this.listAllConfig();
     },
     methods: {
+        async listAllConfig() {
+            let list = await api.listConfigs();
+            if (list && list.length > 0) {
+                list.sort((o1, o2) => { o1.id - o2.id });
+                return list;
+            }
+            return [];
+        },
         async update(name, value) {
             await api.updateConfig(name.toUpperCase(), value);
-            this.config_list = await api.listConfigs();
+            this.config_list = await this.listAllConfig();
         },
         async create(name, value) {
             await api.updateConfig(name, value);
-            this.config_list = await api.listConfigs();
+            this.config_list = await this.listAllConfig();
         }
     }
 };

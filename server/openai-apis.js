@@ -183,6 +183,14 @@ const chunk_header = {
 };
 
 async function processChunkedResponse(response, callback) {
+    if (null == response) {
+        return
+    }
+    if (response.status != 200) {
+        console.error("Status:", response.status, "Error:", await response.body);
+        callback("error, status:" + response.status + ", text:" + await response.text());
+        return;
+    }
     let chunk_index = 0;
     let chunk_real = '', assistant_chunked_response = '';
     for await (let chunkOfBody of response.body) {
