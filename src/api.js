@@ -114,16 +114,21 @@ export default {
                     let datas = chunk.split("data: ").filter(data => {
                         return data.trim().length > 8;
                     }).map(data => {
-                        return JSON.parse(data.trim());
+                        try {
+                            return JSON.parse(data.trim());
+                        } catch (err) {
+                            console.error("unable to handle chunk:\n", chunk, err);
+                        }
+                        return null;
                     });
 
                     // 其实只需要执行一次
-                    // for (let data of datas) {
-                    //     if (++chunk_index % 50 == 0) {
-                    //         console.log("new arriving data:", chunk_index, data);
-                    //     }
-                    //     await callback(data);
-                    // }
+                    for (let data of datas) {
+                        if (++chunk_index % 10 == 0) {
+                            console.log("new arriving data:", chunk_index, data);
+                            await callback(data);
+                        }
+                    }
                     await callback(datas[datas.length - 1])
                 }
             } catch (err) {
