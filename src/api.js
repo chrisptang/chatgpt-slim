@@ -122,12 +122,8 @@ export default {
                         return null;
                     });
 
-                    // 其实只需要执行一次
                     for (let data of datas) {
-                        if (++chunk_index % 10 == 0) {
-                            console.log("new arriving data:", chunk_index, data);
-                            await callback(data);
-                        }
+                        await callback(data);
                     }
                     await callback(datas[datas.length - 1])
                 }
