@@ -175,6 +175,21 @@ app.delete('/api/chats/:id', async (req, res) => {
     res.json({ deleted: true });
 });
 
+app.post('/api/chats/:id/dialogue', async (req, res) => {
+    let id = req.params.id, user = req.user.login
+    let record = await Chats.findOne({ where: { id, user } })
+    if (record) {
+        let messages = [{ role: 'user', content: record.propmt }, { role: 'assistant', content: JSON.parse(record.response).assistant_chunked_response }];
+        let newDialogue = { user, title: "Dialogue at " + new Date().toLocaleString(), messages: JSON.stringify(messages) };
+        newDialogue = await Dialogues.create(newDialogue);
+        console.log("new dialogue:", newDialogue);
+        res.json(newDialogue);
+        return;
+    } else {
+        res.json({ error: true, message: "not found:" + id });
+    }
+});
+
 const chunk_header = {
     'Content-Type': 'application/json',
     'Transfer-Encoding': 'chunked',
@@ -288,7 +303,6 @@ app.get('/api/dialogues', async (req, res) => {
         where: { user }
     });
     res.json(latestRecords);
-
 });
 
 app.get('/api/dialogues/:id', async (req, res) => {

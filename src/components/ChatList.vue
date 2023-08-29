@@ -116,6 +116,13 @@ export default {
             }
             this.endCounting();
         },
+        async chatToDialogue(id) {
+            this.startCounting();
+            let newDialogue = await api.chatToDialogue(id);
+            console.log("newDialogue:", newDialogue)
+            this.endCounting();
+            window.location.href = `/dialogues?id=${newDialogue.id}`
+        },
         converResponseToChat(record) {
             let { id, propmt, response } = { ...record };
             if (!response) {
@@ -172,6 +179,9 @@ export default {
                     <div class="action-icon-group">
                         <i class="refresh-icon action-icon" @click="recompleteChat(chat.id)">
                             <img title="Regenerate" alt="Regenerate" src="/refresh.png" />
+                        </i>
+                        <i class="to-dialogue-icon action-icon" @click="chatToDialogue(chat.id)">
+                            <img title="To dialogue" alt="To dialogue" src="/chat-box.png" />
                         </i>
                         <i class="delete-icon action-icon" @click="deleteChat(chat.id)">
                             <img title="Delete" alt="Delete" src="/delete.png" />

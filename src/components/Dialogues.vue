@@ -2,6 +2,7 @@
 import api from "@/api";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas'
+import TurndownService from 'turndown'
 
 const new_dialogue_obj = JSON.stringify({
     title: "Dialogue with ChatGPT-3.5",
@@ -25,6 +26,7 @@ export default {
             counting_timeout: null,
             refer_previous: false,
             dialogues: [JSON.parse(new_dialogue_obj)],
+            dialogueIds: new Set(),
             working_dialogue: JSON.parse(new_dialogue_obj),
             prompt: "",
             size: 10,
@@ -46,7 +48,16 @@ export default {
     },
     methods: {
         async refresh() {
+            let initId = this.$route.query.id;
+            console.log("initId:", initId)
             await this.listDialogues();
+            if (initId && initId > 0) {
+                if (this.dialogueIds.has(parseInt(initId))) {
+                    this.switchDialogue(initId);
+                } else {
+                    this.switchDialogue(0);
+                }
+            }
         },
         handleCopyCode(event) {
             console.log(event);
@@ -92,8 +103,6 @@ export default {
                 this.dialogues = [newDialogue, ...this.dialogues];
                 this.switchDialogue(newDialogue.id);
             } else {
-                //append to exist one.
-                //todo:
                 let newDialogue = this.converDialogue(await api.updateDialogue({ prompt, id: this.working_dialogue_id }));
                 if (newDialogue.messages && newDialogue.messages.length > 0) {
                     this.working_dialogue.messages[this.working_dialogue.messages.length] = newDialogue.messages[newDialogue.messages.length - 1];
@@ -112,7 +121,7 @@ export default {
                     console.log("finished:", dialogue);
                     return;
                 }
-                //如果未j结束
+                //如果未结束
                 if (!!dialogue.messageIndex && dialogue.messageIndex > 0) {
                     this.working_dialogue.messages[dialogue.messageIndex] = dialogue;
                     return;
@@ -142,10 +151,13 @@ export default {
             let records = await api.listDialogues(20);
             this.endCounting();
             if (records && records.length > 0) {
+                // debugger
+                console.log("records.length:", records.length)
                 this.dialogues = records.map(this.converDialogue);
-                if (this.working_dialogue_id <= 0) {
-                    this.switchDialogue(this.working_dialogue.id);
+                for (let dia of this.dialogues) {
+                    this.dialogueIds.add(dia.id);
                 }
+                console.log("this.dialogueIds", this.dialogueIds)
             }
         },
         enterEditMode(id) {
@@ -211,10 +223,32 @@ export default {
 
             const doc = new jsPDF({ format: [width, height], compress: true });
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.2);
+            const imgData = canvas.toDataURL('image/jpeg', 0.7);
             doc.addImage(imgData, 'PNG', 0, 0, width, height);
             this.endCounting();
             doc.save(`${this.working_dialogue.title}_${new Date().toISOString()}.pdf`);
+        },
+        async saveToMarkdown() {
+            this.startCounting();
+            var turndownService = new TurndownService()
+            const content = document.querySelector('#dialogueContent');
+            var markdown = turndownService.turndown(content);
+            // Create a Blob with Markdown content
+            const blob = new Blob([markdown], { type: 'text/markdown' });
+
+            // Create a download link for the Markdown file
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${this.working_dialogue.title}_${new Date().toISOString()}.md`;
+
+            // Append the link to the DOM and click it programmatically
+            document.body.appendChild(link);
+            link.click();
+
+            // Clean up the URL object
+            URL.revokeObjectURL(url);
+            this.endCounting();
         }
     },
 };
@@ -268,7 +302,9 @@ export default {
                     <button value="chat" @click="completeChunkedDialogue()" :disabled="loading"
                         class="new-chat-btn">chat</button>
                     <button style="margin-left: 10px;" value="savePdf" @click="savePdf()" :disabled="loading"
-                        class="new-chat-btn">save to pdf</button>
+                        class="new-chat-btn">to pdf</button>
+                    <button style="margin-left: 10px;" value="savePdf" @click="saveToMarkdown()" :disabled="loading"
+                        class="new-chat-btn">to markdown</button>
                     <button style="margin-left: 10px;" value="savePdf" @click="renameDialogueWithGPT()" :disabled="loading"
                         class="new-chat-btn">rename dialogue</button>
 

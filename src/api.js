@@ -54,6 +54,9 @@ export default {
     deleteChat(id) {
         return this.execute('delete', `/chats/${id}`)
     },
+    chatToDialogue(id) {
+        return this.execute('post', `/chats/${id}/dialogue`)
+    },
     newChat(propmt, refer_previous = false) {
         return this.execute('post', '/newChat', { propmt: propmt, refer_previous: refer_previous });
     },
