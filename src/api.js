@@ -103,7 +103,7 @@ export default {
         });
         const reader = response.body.getReader();
 
-        let chunk_index = 0
+        let chunk_not_end_with_json = "";
 
         while (true) {
             const { value, done } = await reader.read();
@@ -111,25 +111,43 @@ export default {
             if (done) {
                 return true;
             }
-            let chunk = decoder.decode(value);
+            let chunk = decoder.decode(value).trim();
             try {
-                if (chunk.startsWith("data: ")) {
-                    let datas = chunk.split("data: ").filter(data => {
-                        return data.trim().length > 8;
-                    }).map(data => {
-                        try {
-                            return JSON.parse(data.trim());
-                        } catch (err) {
-                            console.error("unable to handle chunk:\n", chunk, err);
-                        }
-                        return null;
-                    });
+                let datas = chunk.split("data: ").filter(data => {
+                    return data.trim().length > 8;
+                });
 
-                    for (let data of datas) {
-                        await callback(data);
-                    }
-                    await callback(datas[datas.length - 1])
+                if (datas.length <= 0) {
+                    continue;
                 }
+
+                if (!datas[0].startsWith("{")) {
+                    // 说明是不完整的chunk：
+                    datas[0] = chunk_not_end_with_json + datas[0];
+                    chunk_not_end_with_json = "";
+                }
+
+                if (!datas[datas.length - 1].endsWith("}")) {
+                    // 说明是不完整的chunk, 留给下一次
+                    chunk_not_end_with_json = datas[datas.length - 1];
+                    datas = datas.slice(0, datas.length - 1);
+                }
+
+                datas = datas.map(data => {
+                    try {
+                        return JSON.parse(data);
+                    } catch (err) {
+                        console.error("unable to handle chunk:\n", data, err);
+                        return { is_error: true };
+                    }
+                }).filter(data => {
+                    return !data.is_error;
+                });
+
+                for (let data of datas) {
+                    await callback(data);
+                }
+                // await callback(datas[datas.length - 1])
             } catch (err) {
                 console.error("unable to handle chunk:\n", chunk, err);
             }
