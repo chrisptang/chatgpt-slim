@@ -3,6 +3,7 @@ import api from "@/api";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas'
 import TurndownService from 'turndown'
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const new_dialogue_obj = JSON.stringify({
     title: "Dialogue with ChatGPT-3.5",
@@ -18,6 +19,26 @@ const new_dialogue_obj = JSON.stringify({
 
 export default {
     name: "ChatList",
+    setup() {
+        const screenWidth = ref(window.innerWidth);
+
+        const handleResize = () => {
+            screenWidth.value = window.innerWidth;
+            console.log("screenWidth.value", screenWidth.value)
+        };
+
+        onMounted(() => {
+            window.addEventListener('resize', handleResize);
+        });
+
+        onUnmounted(() => {
+            window.removeEventListener('resize', handleResize);
+        });
+
+        return {
+            screenWidth,
+        };
+    },
     data() {
         return {
             warn_msg: "",
@@ -33,13 +54,13 @@ export default {
             loading: false,
             editMode: [],
             newTitle: '',
+            showSideMenuOnMobile: false,
         };
     },
     async created() {
         this.refresh();
     },
     updated() {
-        console.log("updated");
         const container = this.$refs.codeContainer;
         const copyButtons = container.querySelectorAll('.copy-code-button');
         copyButtons.forEach(button => {
@@ -138,6 +159,7 @@ export default {
             this.endCounting();
         },
         async switchDialogue(id) {
+            await this.showDialogueList();
             this.working_dialogue_id = id;
             if (id == 0) {
                 this.working_dialogue = JSON.parse(new_dialogue_obj);
@@ -249,6 +271,14 @@ export default {
             // Clean up the URL object
             URL.revokeObjectURL(url);
             this.endCounting();
+        },
+        async showDialogueList() {
+            let is_mobile = this.isMobile();
+            if (!is_mobile) {
+                return;
+            }
+            this.showSideMenuOnMobile = !this.showSideMenuOnMobile;
+            this.$refs.sideMenu.style.display = this.showSideMenuOnMobile ? "block" : "none";
         }
     },
 };
@@ -256,7 +286,7 @@ export default {
 
 <template>
     <div id="dialogues" class="dialogue-container">
-        <div class="dialogue-list custom-scrollbar" :hidden="isMobile()">
+        <div class="dialogue-list custom-scrollbar" ref="sideMenu">
             <div @click="switchDialogue(0)" class="dialogue-title"
                 :class="working_dialogue_id == 0 ? 'dialogue-title selected-dialogue' : 'dialogue-title'">
                 <p class="chat-propmt">New Dialogue</p>
@@ -301,6 +331,8 @@ export default {
                 <p>
                     <button value="chat" @click="completeChunkedDialogue()" :disabled="loading"
                         class="new-chat-btn">chat</button>
+                    <button style="margin-left: 10px;" value="showDialogueList" @click="showDialogueList()"
+                        :disabled="loading" class="new-chat-btn show-dialogue-list">dialogue list</button>
                     <button style="margin-left: 10px;" value="savePdf" @click="savePdf()" :disabled="loading"
                         class="new-chat-btn save-pdf">to pdf</button>
                     <button style="margin-left: 10px;" value="saveMarkdown" @click="saveToMarkdown()" :disabled="loading"
@@ -392,6 +424,18 @@ export default {
     padding-top: 20px;
 }
 
+@media (max-width: 1024px) {
+    .dialogue-list {
+        position: absolute;
+        background-color: var(--color-background);
+        width: 55vw;
+        z-index: 99;
+        padding-right: 0 2vw 0 1vw;
+        box-shadow: 0 0 5vw hsla(160, 100%, 30%, 0.8);
+        /* var(--color-background); */
+    }
+}
+
 @media (max-width: 800px) {
 
     .save-markdown,
@@ -407,6 +451,10 @@ export default {
 @media (min-width: 1024px) {
     p.chat-propmt {
         padding: 5px 10px;
+    }
+
+    .show-dialogue-list {
+        display: none;
     }
 
     .dialogue-container .chat-propmt,
