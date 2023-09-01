@@ -211,9 +211,9 @@ p.chat-propmt {
   /* mobile page */
   .new-chat .new-chat-box {
     width: 100%;
-    max-width: 99vw;
-    max-height: 50rem;
-    min-height: 5rem;
+    max-width: 96vw;
+    max-height: 50vh;
+    min-height: 5vh;
   }
 
   #app {
@@ -262,13 +262,14 @@ p.chat-propmt {
   }
 
   .view-container {
-    width: 100vw;
+    width: 99vw;
   }
 
   .view-container .chat-propmt,
   .view-container .chat-response {
-    width: 98vw;
-    padding: 0 0.5vw;
+    max-width: 96vw;
+    width: 100%;
+    padding: 0.5vh 2vw;
     overflow-x: auto;
   }
 
@@ -277,7 +278,7 @@ p.chat-propmt {
   }
 
   .dialogue-detail {
-    width: 100vw;
+    width: 99vw;
   }
 }
 

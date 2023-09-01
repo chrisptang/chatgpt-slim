@@ -69,7 +69,7 @@ export default {
             }
         },
         isMobile() {
-            return window.screen.width <= 1024;
+            return window.matchMedia("(max-width: 800px)").matches;
         },
         async startCounting() {
             if (this.loading) {
@@ -302,10 +302,10 @@ export default {
                     <button value="chat" @click="completeChunkedDialogue()" :disabled="loading"
                         class="new-chat-btn">chat</button>
                     <button style="margin-left: 10px;" value="savePdf" @click="savePdf()" :disabled="loading"
-                        class="new-chat-btn">to pdf</button>
-                    <button style="margin-left: 10px;" value="savePdf" @click="saveToMarkdown()" :disabled="loading"
-                        class="new-chat-btn">to markdown</button>
-                    <button style="margin-left: 10px;" value="savePdf" @click="renameDialogueWithGPT()" :disabled="loading"
+                        class="new-chat-btn save-pdf">to pdf</button>
+                    <button style="margin-left: 10px;" value="saveMarkdown" @click="saveToMarkdown()" :disabled="loading"
+                        class="new-chat-btn save-markdown">to markdown</button>
+                    <button style="margin-left: 10px;" value="rename" @click="renameDialogueWithGPT()" :disabled="loading"
                         class="new-chat-btn">rename dialogue</button>
 
                 </p>
@@ -322,10 +322,6 @@ export default {
 </template>
 
 <style scoped>
-p.chat-propmt {
-    padding: 5px 10px;
-}
-
 .single-chat:hover .delete-icon {
     display: inline;
     position: absolute;
@@ -396,7 +392,22 @@ p.chat-propmt {
     padding-top: 20px;
 }
 
+@media (max-width: 800px) {
+
+    .save-markdown,
+    .save-pdf {
+        display: none;
+    }
+
+    .chat-list-ul {
+        min-height: 50vh;
+    }
+}
+
 @media (min-width: 1024px) {
+    p.chat-propmt {
+        padding: 5px 10px;
+    }
 
     .dialogue-container .chat-propmt,
     .dialogue-container .chat-response {
@@ -467,13 +478,5 @@ p.chat-propmt {
     .single-dialogue {
         background-color: var(--color-background);
     }
-
-    /* .dialogue-title p.chat-propmt {
-        background-color: #555;
-    }
-
-    .dialogue-title:hover p.chat-propmt {
-        background-color: #777;
-    } */
 }
 </style>
