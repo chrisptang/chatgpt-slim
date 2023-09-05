@@ -85,11 +85,23 @@ async function make_openai_request(path, data) {
     };
     const postJson = { headers }
     use_proxy_or_not(postJson, config);
-    let url = `https://api.openai.com/v1/${path}`
+    let openAiHost = config.OPENAI_API_HOST || process.env.OPENAI_API_HOST || 'https://api.openai.com'
+    let url = `${openAiHost}/v1/${path}`
     console.log("making request to:", url)
     if (data) {
         //POST as json
         postJson.method = "POST";
+        if (!data.max_tokens) {
+            data.max_tokens = 1024 * 100;
+        }
+        if (url.indexOf("openai.com") < 0) {
+            // 说明不是对open AI的请求；
+            let messages_with_sys = [{
+                "content": "You are a helpful code assistant who very willing to provide full functional codes according to user request. Your are also very willing to provide answers to user's question even if they are not about coding", "role": "system"
+            }];
+            messages_with_sys.push(...data.messages);
+            data.messages = messages_with_sys;
+        }
         postJson.body = JSON.stringify(data);
     }
     try {
@@ -202,8 +214,13 @@ async function processChunkedResponse(response, callback) {
         return
     }
     if (response.status != 200) {
-        console.error("Status:", response.status, "Error:", await response.body);
-        callback("error, status:" + response.status + ", text:" + await response.text());
+        let text = '';
+        if (response.error) {
+            text = JSON.stringify(response);
+        } else if (response.text) {
+            text = await response.text();
+        }
+        callback("error, status:" + response.status + ", text:" + text);
         return;
     }
     let chunk_index = 0;
@@ -211,6 +228,10 @@ async function processChunkedResponse(response, callback) {
     for await (let chunkOfBody of response.body) {
         chunk_index++;
         let chunk = chunkOfBody.toString().trim();
+        if (chunk.startsWith(": ping")) {
+            console.log("也许是ping[", chunk, ']');
+            continue;
+        }
         chunk_real += chunk;
 
 

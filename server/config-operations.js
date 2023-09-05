@@ -10,14 +10,17 @@ const AZURE_RESOURCE_NAME = process.env.AZURE_RESOURCE_NAME || '';
 const AZURE_DEPLOYMENT_NAME = process.env.AZURE_DEPLOYMENT_NAME || '';
 const AZURE_API_VERSION = process.env.AZURE_API_VERSION || '2023-05-15';
 const AZURE_API_KEY = process.env.AZURE_API_KEY || '';
+const OPENAI_API_HOST = process.env.OPENAI_API_HOST || '';
 
-let config = { DEFAUL_OPENAI_MODEL, OPENAI_API_KEY, HTTP_PROXY, USE_AZURE, USE_PROXY, AZURE_API_VERSION, AZURE_DEPLOYMENT_NAME, AZURE_RESOURCE_NAME, AZURE_API_KEY };
+let config = { DEFAUL_OPENAI_MODEL, OPENAI_API_KEY, HTTP_PROXY, USE_AZURE, USE_PROXY, AZURE_API_VERSION, AZURE_DEPLOYMENT_NAME, AZURE_RESOURCE_NAME, AZURE_API_KEY, OPENAI_API_HOST };
 console.log("system default config list:", JSON.stringify(config));
 let init = false;
 
 function setUpSysConfig(app) {
     app.get("/api/config", async (req, res) => {
-        let config_list = await Configs.findAll();
+        let config_list = await Configs.findAll({
+            order: [['id', 'DESC']]
+        });
         res.json(config_list);
     });
 
