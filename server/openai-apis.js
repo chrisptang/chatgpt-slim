@@ -97,7 +97,7 @@ async function make_openai_request(path, data) {
         if (url.indexOf("openai.com") < 0) {
             // 说明不是对open AI的请求；
             let messages_with_sys = [{
-                "content": "You are a helpful code assistant who very willing to provide full functional codes according to user request. Your are also very willing to provide answers to user's question even if they are not about coding", "role": "system"
+                "content": "You are a helpful code assistant, write response that appropriately completes user's request. Ask user for further information if needed", "role": "system"
             }];
             messages_with_sys.push(...data.messages);
             data.messages = messages_with_sys;
