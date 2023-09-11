@@ -227,7 +227,7 @@ export default {
 .chat-list-ul li.single-chat {
     border-radius: 5px;
     border: #e0e0e0 solid 1px;
-    padding: 0.5rem;
+    padding: 0.5rem 0.5vw;
     box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.3);
 }
 

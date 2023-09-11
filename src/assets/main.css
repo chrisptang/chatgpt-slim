@@ -216,6 +216,10 @@ p.chat-propmt {
     min-height: 5vh;
   }
 
+  .new-chat {
+    padding: 0 1vw;
+  }
+
   #app {
     padding: 0 0.5vw;
     min-height: 100vh;

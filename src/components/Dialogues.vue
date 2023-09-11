@@ -272,12 +272,16 @@ export default {
             URL.revokeObjectURL(url);
             this.endCounting();
         },
-        async showDialogueList() {
+        async showDialogueList(forceClose = false) {
             let is_mobile = this.isMobile();
             if (!is_mobile) {
                 return;
             }
-            this.showSideMenuOnMobile = !this.showSideMenuOnMobile;
+            if (forceClose) {
+                this.showSideMenuOnMobile = false;
+            } else {
+                this.showSideMenuOnMobile = !this.showSideMenuOnMobile;
+            }
             this.$refs.sideMenu.style.display = this.showSideMenuOnMobile ? "block" : "none";
         }
     },
@@ -302,6 +306,8 @@ export default {
                         <img src="/delete.png" />
                     </i>
                 </p>
+            </div>
+            <div class="side-menu-cover-on-mobile" @click="showDialogueList(true)">
             </div>
         </div>
         <div class="dialogue-detail custom-scrollbar">
@@ -339,7 +345,6 @@ export default {
                         class="new-chat-btn save-markdown">to markdown</button>
                     <button style="margin-left: 10px;" value="rename" @click="renameDialogueWithGPT()" :disabled="loading"
                         class="new-chat-btn">rename dialogue</button>
-
                 </p>
                 <p style="min-height: 30px;">
                     <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
@@ -428,11 +433,25 @@ export default {
     .dialogue-list {
         position: absolute;
         background-color: var(--color-background);
-        width: 55vw;
+        width: 60vw;
         z-index: 99;
-        padding-right: 0 2vw 0 1vw;
+        padding: 1vh 2vw;
         box-shadow: 0 0 5vw hsla(160, 100%, 30%, 0.8);
         /* var(--color-background); */
+    }
+
+    .chat-list-ul {
+        padding-right: 1vw;
+        padding-left: 1vw;
+    }
+
+    .side-menu-cover-on-mobile{
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 40vw;
+        height: 100vh;
+        background-color: antiquewhite;
     }
 }
 

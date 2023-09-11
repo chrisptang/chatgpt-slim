@@ -48,7 +48,6 @@ async function make_azure_openai_request(path, data) {
     };
     const postJson = { headers }
     use_proxy_or_not(postJson, config);
-    //https://chrisptang-au-gpt.openai.azure.com/openai/deployments/chrisptang-gpt-35-turbo-16k/chat/completions?api-version=2023-05-15
     let url = `https://${config.AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments/${config.AZURE_DEPLOYMENT_NAME}/${path}?api-version=${config.AZURE_API_VERSION}`
     console.log("making request to:", url)
     if (data) {
