@@ -451,7 +451,7 @@ export default {
         top: 0;
         width: 40vw;
         height: 100vh;
-        background-color: antiquewhite;
+        background-color: transparent;
     }
 }
 
