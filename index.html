@@ -7,7 +7,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js"
     integrity="sha512-SYfDUYPg5xspsG6OOpXU366G8SZsdHOhqk/icdrYJ2E/WKZxPxze7d2HD3AyXpT7U22PZ5y74xRpqZ6A2bJ+kQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <!-- <link rel="icon" href="/favicon.ico"> -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_TRACKING_ID"></script>
   <link rel="icon" href="/artificial-intelligence.png">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Simple GPT</title>
@@ -25,11 +25,17 @@
       content = _md.render(content);
       if (!copyCode) {
         return content;
-      }else{
+      } else {
         //append copy code button：
-        return content.replaceAll(/<\/code><\/pre>/g,'</code><i class="copy-code-button">copy</i></pre>')
+        return content.replaceAll(/<\/code><\/pre>/g, '</code><i class="copy-code-button">copy</i></pre>')
       }
     }
+
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'GA_TRACKING_ID');
+    window.gtag = gtag;
   </script>
 </body>
 

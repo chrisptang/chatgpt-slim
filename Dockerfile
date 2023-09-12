@@ -17,6 +17,8 @@ ADD server/config-operations.js /app/server/config-operations.js
 COPY --from=builder /app/server/package.json .
 
 ADD dist /app/frontend/
+ADD entry-point.sh /app/server/entry-point.sh
+RUN chmod +x /app/server/entry-point.sh
 
 ENV PORT "5000"
 ENV SERVER_STATIC_PATH "/app/frontend"
@@ -29,8 +31,8 @@ ENV GITHUB_CLIENT_ID ""
 ENV GITHUB_CLIENT_SECRET "secret-of-the-clientId"
 ENV GITHUB_LOGIN_CALLBACK_HOST ""
 ENV USE_SQLITE "false"
-
+ENV GA_TRACKING_ID "NOT-A-VALID-ID"
 
 EXPOSE ${PORT}
 
-CMD [ "node","server.js"]
+CMD [ "sh","entry-point.sh"]
