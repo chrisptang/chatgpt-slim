@@ -117,6 +117,7 @@ export default {
                 this.prompt = "";
                 return;
             }
+            window.gtag("event", "dialogue", { value: prompt.length, 'event_label': "new" });
             this.startCounting();
             if (this.working_dialogue_id == 0) {
                 //create new one

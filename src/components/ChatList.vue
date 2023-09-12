@@ -92,6 +92,7 @@ export default {
         },
         async recompleteChat(id) {
             await this.completeChatChunkedById(id);
+            window.gtag("event", "chat", { 'event_label': "recomplete" });
         },
         async completeChat() {
             this.warn_msg = "";
@@ -101,6 +102,7 @@ export default {
                 this.prompt = "";
                 return;
             }
+            window.gtag("event", "chat", { value: prompt.length, 'event_label': "new" });
             this.startCounting();
             let newChat = await api.newChat(prompt);
             this.chats = this.chats.concat(newChat);
