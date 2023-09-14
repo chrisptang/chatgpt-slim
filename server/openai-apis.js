@@ -236,7 +236,8 @@ async function processChunkedResponse(response, callback) {
 
         if (!chunk.endsWith("}") && !chunk.endsWith('[DONE]')) {
             //说明不是JSON结尾
-            console.warn(`${chunk_index}:不是JSON结尾:${chunk_real}`);
+            // console.warn(`${chunk_index}:不是JSON结尾:${chunk_real}`);
+            console.warn(`${chunk_index}:不是JSON结尾`);
             continue;
         }
 
@@ -252,14 +253,18 @@ async function processChunkedResponse(response, callback) {
                 }
             });
 
+            let chunk_send_count = 0;
             for (let data of datas) {
                 if (!data || !data.choices) {
                     continue;
                 }
+                chunk_send_count++;
                 let delta = { ...data.choices[0].delta };
                 if (delta && delta.content) {
                     assistant_chunked_response += delta.content;
-                    // callback(assistant_chunked_response);
+                    if (chunk_send_count % 5 == 0) {
+                        callback(assistant_chunked_response);
+                    }
                 }
             }
             callback(assistant_chunked_response);

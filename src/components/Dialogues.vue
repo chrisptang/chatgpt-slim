@@ -74,9 +74,9 @@ export default {
             await this.listDialogues();
             if (initId && initId > 0) {
                 if (this.dialogueIds.has(parseInt(initId))) {
-                    this.switchDialogue(initId);
+                    await this.switchDialogue(initId);
                 } else {
-                    this.switchDialogue(0);
+                    await this.switchDialogue(0);
                 }
             }
         },
@@ -121,11 +121,11 @@ export default {
             this.startCounting();
             if (this.working_dialogue_id == 0) {
                 //create new one
-                let newDialogue = this.converDialogue(await api.createDialogue(prompt));
+                let newDialogue = this.convertDialogue(await api.createDialogue(prompt));
                 this.dialogues = [newDialogue, ...this.dialogues];
-                this.switchDialogue(newDialogue.id);
+                await this.switchDialogue(newDialogue.id);
             } else {
-                let newDialogue = this.converDialogue(await api.updateDialogue({ prompt, id: this.working_dialogue_id }));
+                let newDialogue = this.convertDialogue(await api.updateDialogue({ prompt, id: this.working_dialogue_id }));
                 if (newDialogue.messages && newDialogue.messages.length > 0) {
                     this.working_dialogue.messages[this.working_dialogue.messages.length] = newDialogue.messages[newDialogue.messages.length - 1];
                 } else {
@@ -176,7 +176,7 @@ export default {
             if (records && records.length > 0) {
                 // debugger
                 console.log("records.length:", records.length)
-                this.dialogues = records.map(this.converDialogue);
+                this.dialogues = records.map(this.convertDialogue);
                 for (let dia of this.dialogues) {
                     this.dialogueIds.add(dia.id);
                 }
@@ -205,7 +205,7 @@ export default {
             }
             this.endCounting();
         },
-        converDialogue(record) {
+        convertDialogue(record) {
             if (!record) {
                 return record;
             }
@@ -226,7 +226,7 @@ export default {
             }
             messages.splice(index, 2);
             this.startCounting();
-            this.working_dialogue = this.converDialogue(await api.updateDialogue({ messages, id: this.working_dialogue_id }));
+            this.working_dialogue = this.convertDialogue(await api.updateDialogue({ messages, id: this.working_dialogue_id }));
             this.endCounting();
         },
         async savePdf() {
@@ -446,7 +446,7 @@ export default {
         padding-left: 1vw;
     }
 
-    .side-menu-cover-on-mobile{
+    .side-menu-cover-on-mobile {
         position: fixed;
         right: 0;
         top: 0;
