@@ -11,7 +11,7 @@ import DarkModeToggle from './components/DarkModeToggle.vue';
   <div>
     <div class="header sticky-header">
       <div class="greetings">
-        <h1 class="green">{{ "Chat with GPT-3.5" }}</h1>
+        <h1 class="green">{{ "GPT Everything" }}</h1>
       </div>
       <div class="header-links">
         <div class="route-item" v-for="route in routers">
@@ -102,6 +102,7 @@ nav a:first-of-type {
   align-items: baseline;
   padding: 0 calc(var(--section-gap) / 4);
   background-color: white;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.3);
 }
 
 @media(prefers-color-scheme: dark) {
