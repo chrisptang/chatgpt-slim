@@ -360,8 +360,9 @@ app.post('/api/dialogues/:id/rename', async (req, res) => {
         return;
     }
     console.log("renaming dialogue with GPT:", id);
-
-    let messages = JSON.parse(record.messages).concat({ role: "user", content: "name our conversation within 10 words" });
+    
+    //what's the proper title of our conversation? provide anwser in the language of its content.
+    let messages = JSON.parse(record.messages).concat({ role: "user", content: "What is the appropriate heading for our discussion? Please provide the response in the language that reflects its subject matter." });
 
     let model = req.body.model || DEFAUL_OPENAI_MODEL,
         data = {

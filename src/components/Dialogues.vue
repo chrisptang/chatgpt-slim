@@ -345,7 +345,7 @@ export default {
                     <button style="margin-left: 10px;" value="saveMarkdown" @click="saveToMarkdown()" :disabled="loading"
                         class="new-chat-btn save-markdown">to markdown</button>
                     <button style="margin-left: 10px;" value="rename" @click="renameDialogueWithGPT()" :disabled="loading"
-                        class="new-chat-btn">rename dialogue</button>
+                        class="new-chat-btn">name dialogue</button>
                 </p>
                 <p style="min-height: 30px;">
                     <span :hidden="!loading" style="color: hsla(200, 90%, 37%, 1);">waiting server response{{
