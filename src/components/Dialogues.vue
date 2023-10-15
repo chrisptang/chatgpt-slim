@@ -432,10 +432,11 @@ export default {
 
 @media (max-width: 1024px) {
     .dialogue-list {
-        position: absolute;
+        position: fixed;
+        top: 1vh;
         background-color: var(--color-background);
         width: 60vw;
-        z-index: 99;
+        z-index: 9999;
         padding: 1vh 2vw;
         box-shadow: 0 0 5vw hsla(160, 100%, 30%, 0.8);
         /* var(--color-background); */
