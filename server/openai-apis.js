@@ -49,7 +49,7 @@ async function make_azure_openai_request(path, data) {
     const postJson = { headers }
     use_proxy_or_not(postJson, config);
     let url = `https://${config.AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments/${config.AZURE_DEPLOYMENT_NAME}/${path}?api-version=${config.AZURE_API_VERSION}`
-    console.log("making request to:", url)
+    console.log("making request to:", url);
     if (data) {
         //POST as json
         postJson.method = "POST";
@@ -74,6 +74,9 @@ async function make_azure_openai_request(path, data) {
 
 async function make_openai_request(path, data) {
     let config = await getConfig();
+    if ('true' === config.USE_SYSTEM_PROMPT && config.SYSTEM_PROMPT) {
+
+    }
     if ("true" === config.USE_AZURE) {
         return await make_azure_openai_request(path, data);
     }
@@ -93,15 +96,17 @@ async function make_openai_request(path, data) {
         if (!data.max_tokens) {
             data.max_tokens = 1024 * 100;
         }
-        if (url.indexOf("openai.com") < 0) {
+        if (url.indexOf("openai.com") < 0 && data.messages[0].role != 'system') {
             // 说明不是对open AI的请求；
             let messages_with_sys = [{
-                "content": "You are a helpful code assistant, write response that appropriately completes user's request. Ask user for further information if needed", "role": "system"
+                "content": config.SYSTEM_PROMPT,
+                "role": "system"
             }];
             messages_with_sys.push(...data.messages);
             data.messages = messages_with_sys;
         }
         postJson.body = JSON.stringify(data);
+        console.log(`requesting API:${url} with data:\n${postJson.body}`)
     }
     try {
         let resposne = await fetch(url, postJson);
@@ -360,7 +365,7 @@ app.post('/api/dialogues/:id/rename', async (req, res) => {
         return;
     }
     console.log("renaming dialogue with GPT:", id);
-    
+
     //what's the proper title of our conversation? provide anwser in the language of its content.
     let messages = JSON.parse(record.messages).concat({ role: "user", content: "What is the appropriate heading for our discussion? Please provide the response in the language that reflects its subject matter." });
 

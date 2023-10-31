@@ -6,13 +6,18 @@ const HTTP_PROXY = process.env.HTTP_PROXY;
 
 const USE_PROXY = process.env.USE_PROXY || 'true';
 const USE_AZURE = process.env.USE_AZURE || 'false';
+const USE_SYSTEM_PROMPT = process.env.USE_SYSTEM_PROMPT || 'false';
+const SYSTEM_PROMPT = process.env.SYSTEM_PROMPT || 'You are a helpful AI assistant. During the conversation, you should always give helpful, detailed, and polite answers to the user\'s questions';
 const AZURE_RESOURCE_NAME = process.env.AZURE_RESOURCE_NAME || '';
 const AZURE_DEPLOYMENT_NAME = process.env.AZURE_DEPLOYMENT_NAME || '';
 const AZURE_API_VERSION = process.env.AZURE_API_VERSION || '2023-05-15';
 const AZURE_API_KEY = process.env.AZURE_API_KEY || '';
 const OPENAI_API_HOST = process.env.OPENAI_API_HOST || '';
 
-let config = { DEFAUL_OPENAI_MODEL, OPENAI_API_KEY, HTTP_PROXY, USE_AZURE, USE_PROXY, AZURE_API_VERSION, AZURE_DEPLOYMENT_NAME, AZURE_RESOURCE_NAME, AZURE_API_KEY, OPENAI_API_HOST };
+let config = {
+    USE_SYSTEM_PROMPT, SYSTEM_PROMPT, DEFAUL_OPENAI_MODEL, OPENAI_API_KEY, HTTP_PROXY, USE_AZURE,
+    USE_PROXY, AZURE_API_VERSION, AZURE_DEPLOYMENT_NAME, AZURE_RESOURCE_NAME, AZURE_API_KEY, OPENAI_API_HOST
+};
 console.log("system default config list:", JSON.stringify(config));
 let init = false;
 
