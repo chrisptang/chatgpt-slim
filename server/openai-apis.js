@@ -94,7 +94,7 @@ async function make_openai_request(path, data) {
         //POST as json
         postJson.method = "POST";
         if (!data.max_tokens) {
-            data.max_tokens = 1024 * 100;
+            data.max_tokens = config.MAX_GEN_TOKENS ? parseInt(config.MAX_GEN_TOKENS) : 1024 * 2;
         }
         if (url.indexOf("openai.com") < 0 && data.messages[0].role != 'system') {
             // 说明不是对open AI的请求；
