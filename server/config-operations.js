@@ -24,6 +24,10 @@ let init = false;
 
 function setUpSysConfig(app) {
     app.get("/api/config", async (req, res) => {
+        if (!init) {
+            await initConfig();
+            init = true;
+        }
         let config_list = await Configs.findAll({
             order: [['id', 'DESC']]
         });
@@ -50,11 +54,13 @@ function setUpSysConfig(app) {
 
 async function initConfig() {
     let config_list = await Configs.findAll();
+    console.log(`是否需要初始化:${JSON.stringify(config_list)}`)
     if (!config_list || config_list.length <= 0) {
         // 初始化数据库记录
+        console.log(`初始化数据库配置项记录...${JSON.stringify(config)}`)
         let config_list = [];
         for (let key of Object.keys(config)) {
-            config_list[config_list.length] = { config_name: key, config_valye: config[key] };
+            config_list[config_list.length] = { config_name: key, config_value: config[key] };
         }
         await Configs.bulkCreate(config_list);
         init = true;

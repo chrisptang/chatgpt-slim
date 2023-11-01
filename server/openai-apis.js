@@ -525,6 +525,6 @@ app.use((err, req, res, next) => {
 
 sync_database(async () => {
     app.listen(port, () => {
-        console.log(`listening to port localhost:${port}`)
+        console.log(`server running on: http://localhost:${port}`)
     });
 });
