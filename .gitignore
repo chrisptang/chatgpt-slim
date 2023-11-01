@@ -35,3 +35,4 @@ server/package-lock.json
 avatar/
 data/
 .env*
+sqlite/

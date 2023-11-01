@@ -10,11 +10,12 @@ const pd_url = `postgres://${pg_user}:${pg_password}@${pg_host}:${pg_port}/${pg_
 
 let database = null;
 if ('true' === process.env.USE_SQLITE) {
+    let sqliteDir = process.env.SQLITE_DIR || '/app/data/sqlite';
     database = new Sequelize({
         dialect: 'sqlite',
-        storage: '/app/data/sqlite/chat_db_file'
+        storage: `${sqliteDir}/chat_db_file`
     });
-    console.log("\n\nusing sqlite as databse:");
+    console.log(`using sqlite as databse:${process.env.SQLITE_DIR}`);
 } else {
     database = new Sequelize(pd_url);
 }
