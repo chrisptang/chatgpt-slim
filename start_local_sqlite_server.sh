@@ -8,6 +8,7 @@ export HTTP_PROXY="http://${HOST_NAME}:8001"
 export OPENAI_API_KEY=sk-cJVtUTe8YbShGejGb2_THIS_IS_A_FAKED_API_KEY
 export HTTP_PROXY=http://$HOST_NAME:8001
 export GITHUB_CLIENT_ID=
+export OPENAI_API_HOST=http://$HOST_NAME:8000
 export GITHUB_CLIENT_SECRET=
 export GITHUB_LOGIN_CALLBACK_HOST=
 export EXPOSE_POSTGRES=5432
@@ -18,4 +19,4 @@ export SERVER_STATIC_PATH=`pwd`/dist
 export PORT=4000
 echo "SERVER_STATIC_PATH:${SERVER_STATIC_PATH}"
 
-node server/openai-apis.js
+node server/openai-apis.js > local_sqlite.log 2>&1 &

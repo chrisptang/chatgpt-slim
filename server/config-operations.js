@@ -82,12 +82,20 @@ async function initConfigFromDb() {
     return config_from_db;
 }
 
+let hasLoadFromDbEver = false;
+
 async function getConfig() {
     if (!init) {
         await initConfig();
         init = true;
+    }
 
-        config = await initConfigFromDb();
+    if(!hasLoadFromDbEver){
+	let configFromDb = await initConfigFromDb();
+	if(configFromDb && Object.keys(configFromDb).length > 0){
+	    config = configFromDb;
+	    hasLoadFromDbEver = true;
+	}
     }
 
     return config;
